@@ -9,6 +9,11 @@ const lookup = require('./modules/lookup.js');
 const getString = require('./modules/getString.js');
 
 const PixelData = require('./node_modules/microcanvas-pixeldata/pixeldata.js');
+const CFG = {};
+
+CFG.TARGETS = require('./target-platforms/platforms.js');
+
+
 
 let srcFile = process.argv[2] || './game.js';
 let targetSystem = process.argv[3] || 'arduboy';
@@ -41,7 +46,12 @@ Object.assign(Game.prototype, {
 // Commandline
 if (!module.parent) {
   if (srcFile === '--help') {
-    console.log('Usage: node build.js <MICROCANVAS_SRC.JS> <TARGET>\n\nCurrently supported targets: arduboy');
+    console.log(
+`Usage: node build.js <MICROCANVAS_SRC.JS> <TARGET>
+
+Currently supported targets:
+${Object.keys(CFG.TARGETS).join(', ')}
+`);
 
   } else {
     buildGame(targetSystem, fs.readFileSync(srcFile), require('path').basename(srcFile));
@@ -329,100 +339,54 @@ function exportGame(target) {
 };
 
 function arduboyHeader() {
-  return `
-#include <SPI.h>
-#include "Arduboy.h"
-
-#include <EEPROM.h>
-#include <avr/pgmspace.h>
-
-Arduboy arduboy;
-
-// frame counter, 2-byte unsigned int, max 65536
-unsigned int _microcanvas_frame_counter = 0;
-
-// sprintf() textbuffer for drawText
-char _microcanvas_textbuffer[32];
-
-// global state machine
-unsigned int _microcanvas_state;
-`;
+  return (
+    fs.readFileSync('target-platforms/arduboy/base.ino')
+      .toString()
+    )
 }
 
-function arduboyGfx(id, data) {
-  return `
-PROGMEM const unsigned char ${id}[] = { ${data} };
-`;
+function arduboyGfx(id, data, dimensions) {
+  return (
+    fs.readFileSync('target-platforms/arduboy/assets/gfx.ino')
+      .toString()
+      .replace('$__id__', id)
+      .replace('$__data__', data)
+      .replace('$__dimensions__', dimensions||'')
+    )
 }
 
 function arduboySfx(id, data) {
-  return `
-const byte PROGMEM ${id}[] = { ${data} };
-`;
+  return (
+    fs.readFileSync('target-platforms/arduboy/assets/sfx.ino')
+      .toString()
+      .replace('$__id__', id)
+      .replace('$__data__', data)
+    )
 }
 
 function arduboySetup(contents) {
-  return `
-void setup() {
-  arduboy.begin();
-
-////// CUSTOM SETUP //////
-${contents}
-}
-`;
+  return (
+    fs.readFileSync('target-platforms/arduboy/setup.ino')
+      .toString()
+      .replace('$__contents__;', contents)
+    )
 }
 
 function arduboyLoop(contents) {
-  return `
-void loop() {
-  if (!arduboy.nextFrame()) return;
-
-  ++_microcanvas_frame_counter;
-  if (_microcanvas_frame_counter==60000) _microcanvas_frame_counter = 0;
-
-////// LOOP CONTENTS TO FOLLOW //////
-${contents}
-////// END OF LOOP CONTENTS //////
-
-  arduboy.display();
-}
-`
+  return (
+    fs.readFileSync('target-platforms/arduboy/loop.ino')
+      .toString()
+      .replace('$__contents__;', contents)
+    )
 }
 
 function arduboyBuiltins(id) {
   switch (id) {
     // TODO: implement in C for the Arduboy/PROGMEM
-    case 'collisions': return `
-boolean collides(const unsigned char* s1, int x1,int y1, int s1_width, int s1_height, const unsigned char* s2, int x2,int y2, int s2_width, int s2_height, boolean precise) {
-  boolean result = false;
+    case 'collisions':
+      return fs.readFileSync('target-platforms/arduboy/built-ins/collides.ino').toString();
 
-  // Basic collision rectangle
-  int cx = x1>x2 ? x1 : x2;
-  int cw = x1>x2 ? x2+s2_width-x1 : x1+s1_width-x2;
-
-  int cy = y1>y2 ? y1 : y2;
-  int ch = y1>y2 ? y2+s2_height-y1 : y1+s1_height-y2;
-
-  if (cw>0 && ch>0) {
-    result = true;
-  }
-
-  // No bounding rect collision or no precise check requested
-  if (!precise || !result) {
-    return result;
-  }
-
-
-  return false;
-}`;
-
-    case 'generators': return `
-void _microcanvas_yield(byte n) {
-  arduboy.display();
-  while(n>0) {
-    while (!arduboy.nextFrame()) delay(1);
-    --n;
-  }
-}`;
+    case 'generators':
+      return fs.readFileSync('target-platforms/arduboy/built-ins/').toString();
   }
 }
