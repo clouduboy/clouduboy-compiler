@@ -1,7 +1,6 @@
  'use strict';
 
 const fs = require('fs');
-const acorn = require('acorn');
 
 const utils = require('./modules/utils.js')
 
@@ -62,8 +61,7 @@ function buildGame(target, source, id) {
   game.id = id;
   game.target = target;
 
-  game.ast = acorn.parse(source, { ecmaVersion: 6, sourceType: 'script' });
-  game.ast = astAddParents(game.ast, source.toString());
+  game.ast = require('./modules/ast').from(source.toString())
 
   // Parse
   parseGlobals(); // TODO: function declarations!
