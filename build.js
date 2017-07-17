@@ -8,7 +8,6 @@ const translate = require('./modules/translate.js');
 const lookup = require('./modules/lookup.js');
 const getString = require('./modules/getString.js');
 
-const PixelData = require('./node_modules/microcanvas-pixeldata/pixeldata.js');
 const CFG = {};
 
 CFG.TARGETS = require('./target-platforms/platforms.js');

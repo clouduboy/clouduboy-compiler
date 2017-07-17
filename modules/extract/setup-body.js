@@ -5,7 +5,7 @@ const isCalling = require('../isCalling')
 const translate = require('../translate')
 
 // TODO: fix toplevel import for the library
-const PixelData = require('../../node_modules/microcanvas-pixeldata/pixeldata.js');
+const PixelData = require('microcanvas-pixeldata');
 
 module.exports = { parse }
 
