@@ -21,7 +21,10 @@ function Game(target) {
   Object.assign(this, {
     alias: 'game',
     target: target,
-    constants: [], globals: [], gfx: [], sfx: []
+    constants: [], globals: [], gfx: [], sfx: [],
+    setup: { code: [] },
+    loop:  { code: [] },
+    functions: [],
   });
 }
 
@@ -64,7 +67,7 @@ function buildGame(target, source, id) {
   game.ast = require('./modules/ast').from(source.toString())
 
   // Parse
-  parseGlobals(); // TODO: function declarations!
+  parseGlobals();
 
   parseInitializers();
 
@@ -73,7 +76,6 @@ function buildGame(target, source, id) {
   parseLoopBody();
 
   parseGlobalFunctions();
-  console.log("game",Object.keys(game.__proto__));
 
   // Build
   game.ino = game.export(target);
@@ -180,361 +182,30 @@ function pGuessType(id, value, hint) {
 
 // Collect global declarations
 function parseGlobals() {
-  console.log('Processing globals');
-
-  // TODO: check for reserved globals, like "arduboy"
-
-  // All variable declarations
-  let vars = game.ast.body
-  .filter(o => o.type === 'VariableDeclaration')
-  .forEach(function (n) {
-    if (n.kind === 'const') {
-      n.declarations.forEach(dec => {
-        game.createConstant(getString(dec.id), getString(dec.init));
-      });
-
-    } else if (n.kind === 'let') {
-      n.declarations.forEach(dec => {
-        if (dec.id.name.match(/^gfx/)) {
-          game.gfx.push({
-            id: dec.id.name,
-            cid: utils.toSnakeCase(dec.id.name)
-          });
-          game.gfx[dec.id.name] = game.gfx[game.gfx.length-1];
-
-        } else if (dec.id.name.match(/^sfx/)) {
-          game.sfx.push({
-            id: dec.id.name,
-            cid: utils.toSnakeCase(dec.id.name)
-          });
-          game.sfx[dec.id.name] = game.sfx[game.sfx.length-1];
-
-        // MicroCanvas standard library hook
-        } else if (getString(dec.init) === 'new MicroCanvas') {
-          game.alias = dec.id.name;
-
-          console.log("MicroCanvas uses the alias: game")
-
-        } else {
-          let v = game.createVariable(dec.id.name, undefined, undefined, dec)
-
-          game.globals.push(v)
-
-          // Make global accessible via its name
-          // TODO: maybe use a WeakMap instead?
-          Object.defineProperty(game.globals, dec.id.name, { value: game.globals[game.globals.length-1] })
-        }
-      });
-    }
-  });
-
-  // All global function declaration
-  game.ast.body
-  .filter(o => o.type === 'FunctionDeclaration')
-  .forEach(function (dec) {
-    let id = getString(dec.id);
-    let params = [];
-    console.log('+ new', dec.generator ? 'generator' : 'function', dec.id.name, dec.params.map(p => getString(p)));
-
-    game.globals.push({
-      id: id,
-      cid: utils.toSnakeCase(id),
-      params: params,
-      value: dec,
-      type: dec.generator ? 'generator' : 'function'
-    });
-    game.globals[id] = game.globals[game.globals.length-1];
-
-    // parse function arguments to create local variables
-    dec.params.forEach(p => {
-      params.push(game.createVariable(getString(p), undefined, undefined, dec));
-    });
-
-  });
+  return require('./modules/extract/globals').parse(game)
 }
 
 // Find intializers
 function parseInitializers() {
-  console.log('Looking for initializers');
-
-  let initializers = game.ast.body
-    .filter(o => o.type === 'ExpressionStatement')
-    .map(es => es.expression)
-    .filter(ex => ex.type === 'CallExpression' && ex.callee.type === 'MemberExpression' && ex.callee.object.name === game.alias)
-
-  if (!initializers) {
-    throw new Error('Invalid MicroCanvas file: initializers (setup/loop) not found.');
-  }
-
-  game.initializers = {
-    setup: initializers.find(e => e.callee.property.name === 'setup'),
-    loop: initializers.find(e => e.callee.property.name === 'loop')
-  };
-
-  if (!game.initializers.setup) {
-    throw new Error('Required initializer `game.setup()` not found.');
-  }
-  if (!game.initializers.loop) {
-    throw new Error('Required initializer `game.loop()` not found.');
-  }
+  return require('./modules/extract/main').parse(game)
 }
 
 // Parse game.setup call body and generate setup
 function parseSetupBody() {
-  console.log('Processing game.setup()');
-  game.setup = { code: [] };
-
-  let sbody = game.initializers.setup
-    .arguments[0] // FunctionExpression; TODO: reference
-    .body // BlockStatement
-    .body;
-
-  // Walk the setup-body contents
-  // TODO: these should probably live in translate/translateLib
-  sbody.forEach(exp => {
-    // Load graphics or sound assets
-    if (exp.expression
-     && exp.expression.type === 'AssignmentExpression'
-     && exp.expression.left.type === 'Identifier' // TODO: MemberExpression, like game.state
-     && exp.expression.left.name.match(/^(gfx|sfx)/)
-    ) {
-      loadAsset(exp.expression);
-
-    // Try translating the line
-    } else if (true) {
-      let ln = translate(exp);
-      game.setup.code.push(ln);
-
-    } else {
-      game.setup.code.push('__parseSetupBody("'+(exp.$raw||getString(exp))+'")');
-      console.log('Unknown expression: '+getString(exp));
-    }
-  });
+  return require('./modules/extract/setup-body').parse(game)
 }
 
 // Parse game.setup call body and generate setup
 function parseLoopBody() {
-  console.log('Processing game.loop()');
-  game.loop = { code: [] };
-
-  let loopbody = game.initializers.loop
-    .arguments[0] // FunctionExpression; TODO: reference
-    .body // BlockStatement
-    .body;
-
-  // Walk the setup-body contents
-  loopbody.forEach(exp => {
-    let ln = translate(exp);
-    game.loop.code.push(ln);
-  });
+  return require('./modules/extract/loop-body').parse(game)
 }
 
 // Parse (global) function declarations
 function parseGlobalFunctions() {
-  game.functions = [];
-
-  game.globals.forEach(dec => {
-    if (dec.type === 'function') {
-      console.log('Translating function declaration "'+dec.cid+'()"');
-      let f = { fobj: dec, code: [] };
-
-      let funcbody = dec.value // FunctionDeclaration; TODO: FunctionExpression
-        .body // BlockStatement
-        .body;
-
-      // Walk the body contents
-      funcbody.forEach(exp => {
-        let ln = translate(exp);
-        f.code.push(ln);
-      });
-
-      // Guess return type
-      if (f.code.filter(ln => ln.match(/return/)).length) {
-        f.fobj.rtype = 'int';
-
-      // no return statements: void
-      } else {
-        f.fobj.rtype = 'void';
-      }
-      // TODO: walk AST instead, find 'ReturnStatement'
-      // TODO: guess return type from 'ReturnStatement' value objecttype
-
-      game.functions.push(f);
-    } else if (dec.type === 'generator') {
-      console.log('Translating generator function "'+dec.cid+'()"');
-      let f = { fobj: dec, code: [] };
-
-      let funcbody = dec.value // FunctionDeclaration; TODO: FunctionExpression
-        .body // BlockStatement
-        .body;
-
-      // Walk the body contents
-      funcbody.forEach(exp => {
-        let ln = translate(exp);
-        f.code.push(ln);
-      });
-
-      game.functions.push(f);
-    }
-
-  });
-}
-
-function astAddParents(ast, src) {
-  let Node = astNode();
-
-  let addParent = function(n, parent) {
-    if (!(n && typeof n == 'object')) return;
-
-    // Collections
-    if (n.length) return n.forEach(node => addParent(node, parent));
-
-    // Nodes
-    if (n instanceof Node) {
-      Object.defineProperty(n, '$parent', { value: parent });
-    }
-
-    // Raw content
-    if ('start' in n && 'end' in n) {
-      Object.defineProperty(n, '$raw', { value: src.substring(n.start,n.end) });
-    }
-
-    // Walk subtree
-    ['body', 'left', 'right', 'object', 'property',
-     'callee', 'argument', 'arguments', 'expression',
-     'test', 'consequent', 'alternate',
-     'declarations',
-     'init', 'test', 'update',
-    ].forEach(prop => {
-      if (prop in n) addParent(n[prop], n);
-    });
-  };
-
-  game.ast.body.forEach(n => {
-    // Top level nodes
-    if (n instanceof Node) addParent(n, null);
-  });
-
-  return ast;
-}
-
-function astNode() {
-  return (acorn.parse('function x() {}').body[0]).constructor;
-}
-
-function isCalling(exp, id) {
-  if (exp.type === 'CallExpression') {
-    // looking for a MemberExpression
-    if (id.indexOf('.')) {
-      let mexp = id.split('.');
-      if (exp.callee.type === 'MemberExpression') {
-        return (
-          exp.callee.object.name === mexp[0]
-          &&
-          exp.callee.property.name === mexp[1]
-        );
-      } else {
-        console.warn('Expecting call to a MemberExpression `'+id+'(…)`, but found: '+exp.right.type);
-      }
-
-    // Other call
-    } else {
-      console.warn('Unrecognized call expression format: '+id);
-    }
-  } else {
-    console.warn('Expecting CallExpression `'+id+'(…)`, but found: '+exp.type);
-  }
-
-  return false;
+  return require('./modules/extract/function-bodies').parse(game)
 }
 
 
-
-
-function loadAsset(exp) {
-  let id = exp.left.name;
-
-  // Graphics assets
-  if (id.match(/^gfx/)) {
-    if (!id in game.gfx) {
-      console.warn('Warning: asset '+exp.left.name+' is not declared on the global scope!');
-    }
-
-    // LoadGraphics / LoadSprite are both valid methods for loading graphics assets
-    if (isCalling(exp.right, game.alias+'.loadGraphics')
-     || isCalling(exp.right, game.alias+'.loadSprite')
-    ) {
-      loadGraphics(id, exp.right.arguments);
-      console.log(' 👾 loaded %s as GFX', id);
-    } else {
-      console.log('Unknown GFX load format: '+JSON.stringify(exp.right.callee));
-    }
-  }
-
-  if (id.match(/^sfx/)) {
-    if (!id in game.sfx) {
-      console.warn('Warning: asset '+exp.left.name+' is not declared on the global scope!');
-    }
-
-    if (isCalling(exp.right, game.alias+'.loadTune')) {
-      loadTune(id, exp.right.arguments);
-      console.log(' 🔔 loaded %s as SFX', id);
-    } else {
-      console.log('Unknown SFX load format: '+getString(exp.right.callee));
-    }
-  }
-}
-
-function loadGraphics(id, args) {
-  let str = getString(args[0]);
-
-  // Load graphics data
-  //game.gfx[id].value = arrayInitializerContent(str);
-
-  // Parse hints and create constants for them
-  //game.gfx[id].meta = arrayInitializerHints(game.gfx[id].value);
-  let px = new PixelData(str)
-
-  game.gfx[id].meta = px
-  game.gfx[id].value = px.c();
-
-  game.createConstant(id+'Width', px.w);
-  game.createConstant(id+'Height', px.h);
-  game.createConstant(id+'Frames', px.frames);
-  game.createConstant(id+'Framesize', Math.ceil(px.h/8)*px.w);
-};
-
-function loadTune(id, args) {
-  let str = getString(args[0]);
-  game.sfx[id].value = arrayInitializerContent(str);
-};
-
-
-function arrayInitializerContent(statement) {
-  try {
-    return ( statement
-      .replace(/\r|\n|\t/g, ' ') // remove line breaks and tabs
-      .match(/=\s*[{\[](.*)[}\]]/)[1] // match core data
-      .replace(/\s+/g, ' ').trim() // clean up whitespace
-    ) || statement;
-  } catch(e) {};
-
-  return statement;
-}
-
-function arrayInitializerHints(statement) {
-  let ret = {};
-
-  let m = statement.match(/(?:\/\/|\/\*)\s*(\d+)x(\d+)(?:x(\d+))?/);
-
-  if (m && m[1] && m[2]) {
-    ret.w = parseInt(m[1],10);
-    ret.h = parseInt(m[2],10);
-    ret.frames = m[3] ? parseInt(m[3],10) : 0;
-  }
-
-  return ret;
-}
 
 function exportGame(target) {
   let game = this;

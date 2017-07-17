@@ -46,6 +46,10 @@ function translateLib(exp, callexp) {
       // Global game frame count
       case 'frameCount': return '_microcanvas_frame_counter';
 
+      // Global game framerate
+      // TODO: allow setting this in setup()
+      case 'frameRate': return '60';
+
       // Playback rate
       case 'playbackRate':
         let framerateArgs = [ {
