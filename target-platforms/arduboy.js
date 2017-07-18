@@ -17,6 +17,9 @@ const profile = {
     buttonPrimary: true,
     buttonSecondary: true,
   },
+
+  // Code generator (export code for platform target)
+  export: require('./arduboy/codegen'),
 }
 
 
