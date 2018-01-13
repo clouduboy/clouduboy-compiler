@@ -1,4 +1,4 @@
- 'use strict'
+'use strict'
 
 const fs = require('fs')
 
@@ -32,8 +32,6 @@ ${Object.keys(CFG.TARGETS).join(', ')}
 
   } else {
     let game = build(targetSystem, fs.readFileSync(srcFile), require('path').basename(srcFile))
-
-    console.log(typeof game.ino)
 
     // Save
     fs.writeFileSync('ast.json', JSON.stringify(game.ast))
