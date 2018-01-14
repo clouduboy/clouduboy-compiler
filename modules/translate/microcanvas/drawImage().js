@@ -43,6 +43,7 @@ module.exports = (context) => {
                };
         break;
 
+      // Unsupported
       default:
         argW = { type: '__translateLib('+sA[0].type+')', object: sA[0], property: { type: 'Identifier', name:'width' }};
         argH = { type: '__translateLib('+sA[0].type+')', object: sA[0], property: { type: 'Identifier', name:'height' }};

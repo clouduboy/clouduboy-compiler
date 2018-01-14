@@ -148,9 +148,15 @@ function translate(exp, callexp) {
 
       let parens = false;
 
+      // TODO: http://en.cppreference.com/w/c/language/operator_precedence
+
       // Add parentesis for binary +/- operators
       if (exp.type === 'BinaryExpression' && (op === '+' || op === '-')) {
-        parens = true;
+        if (callexp // only embedded expressions need parens
+            && callexp.operator !== '=' // no parens needed on assignment RHS
+        ) {
+          parens = true;
+        }
       }
 
       // Add parentesis for bitwise <</>> operators
