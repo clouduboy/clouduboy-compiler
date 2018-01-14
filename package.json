@@ -14,7 +14,10 @@
     "microcanvas-pixeldata": "git@github.com:flaki/microcanvas-pixeldata.git"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-flow": "^6.23.0",
     "colors": "^1.1.2",
-    "diff": "^3.3.0"
+    "diff": "^3.3.0",
+    "flow-bin": "^0.63.1"
   }
 }

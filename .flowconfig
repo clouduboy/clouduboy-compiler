@@ -1,0 +1,12 @@
+[ignore]
+
+[include]
+
+[libs]
+modules/flow/microcanvas.d.js
+
+[lints]
+
+[options]
+
+[strict]
