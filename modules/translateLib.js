@@ -29,6 +29,9 @@ function translateLib(exp, callexp) {
     id = getString(exp);
   }
 
+  // Build context object
+  const context = { translate, exp, callexp, obj, deepObj, prop, id };
+
   // Function call
   if (id) {
     return lookup(exp) + translate.args(callexp.arguments);
@@ -37,7 +40,7 @@ function translateLib(exp, callexp) {
   } else if (obj === translate.game.alias) {
     switch (prop) {
       // Screen width and height
-      case 'width': return 'WIDTH';
+      case 'width': return require('./translate/microcanvas/width')(context);
       case 'height': return 'HEIGHT';
 
       // Global game state
@@ -134,63 +137,19 @@ function translateLib(exp, callexp) {
         }
       }
 
-      // drawImage has a different library name and uses different args
-      // translate.game.drawImage(gfx,x,y);    >>>    arduboy.drawBitmap(x,y, gfx, GFX_WIDTH,GFX_HEIGHT, WHITE);
-      // translate.game.clearImage(gfx,x,y);   >>>    arduboy.drawBitmap(x,y, gfx, GFX_WIDTH,GFX_HEIGHT, BLACK);
-      if (prop === 'drawImage' || prop === 'clearImage' || prop === 'eraseImage') {
-        let sA = callexp.arguments;
-        let argW, argH;
-        // MemberExpression is e.g. gfxAnim[frame]-style declarations
+      if (prop === 'drawImage') {
+        const r = require('./translate/microcanvas/drawImage()')(context);
+        return r.call + translate.args(r.args)
+      }
 
-        if (sA[0] && sA[0].type) {
-          let gfx;
+      if (prop === 'clearImage') {
+        const r = require('./translate/microcanvas/clearImage()')(context);
+        return r.call + translate.args(r.args)
+      }
 
-          switch (sA[0].type) {
-            case 'Identifier':
-              gfx = getString(sA[0]);
-              argW = { type: 'MemberExpression', object: gfx, property: { type: 'Identifier', name:'width' }};
-              argH = { type: 'MemberExpression', object: gfx, property: { type: 'Identifier', name:'height' }};
-              break;
-            case 'MemberExpression':
-              gfx = getString(sA[0].object);
-              argW = { type: 'MemberExpression', object: gfx, property: { type: 'Identifier', name:'width' }};
-              argH = { type: 'MemberExpression', object: gfx, property: { type: 'Identifier', name:'height' }};
-              break;
-            case 'ConditionalExpression':
-              let gfxC = getString(sA[0].consequent),
-                  gfxA = getString(sA[0].alternate);
-
-              argW = { type: 'ConditionalExpression',
-                       test: sA[0].test,
-                       consequent: { type: 'MemberExpression', object: gfxC, property: { type: 'Identifier', name:'width' }},
-                       alternate: { type: 'MemberExpression', object: gfxA, property: { type: 'Identifier', name:'width' }}
-                     };
-              argH = { type: 'ConditionalExpression',
-                       test: sA[0].test,
-                       consequent: { type: 'MemberExpression', object: gfxC, property: { type: 'Identifier', name:'height' }},
-                       alternate: { type: 'MemberExpression', object: gfxA, property: { type: 'Identifier', name:'height' }}
-                     };
-              break;
-
-            default:
-              argW = { type: '__translateLib('+sA[0].type+')', object: sA[0], property: { type: 'Identifier', name:'width' }};
-              argH = { type: '__translateLib('+sA[0].type+')', object: sA[0], property: { type: 'Identifier', name:'height' }};
-          }
-
-        } else {
-          argW = { type: 'MemberExpression', object: sA[0], property: { type: 'Identifier', name:'width' }};
-          argH = { type: 'MemberExpression', object: sA[0], property: { type: 'Identifier', name:'height' }};
-        }
-
-        let clear = (prop === 'clearImage' || prop === 'eraseImage');
-        let targetArgs = [
-          sA[1], sA[2], sA[0],
-          argW, argH,
-          clear ? 'BLACK' : 'WHITE'
-        ];
-
-        return translate.game.target+'.drawBitmap' + translate.args(targetArgs);
-        // todo subframe slice version
+      if (prop === 'eraseImage') {
+        const r = require('./translate/microcanvas/eraseImage()')(context);
+        return r.call + translate.args(r.args)
       }
 
       // drawText
