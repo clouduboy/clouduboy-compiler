@@ -7,7 +7,36 @@ const acorn = require('acorn')
 const Node = acorn.parse('function x() {}').body[0].constructor
 
 
-module.exports = { from }
+// AST helpers
+const AST = Object.create(null)
+
+AST.Identifier = function(name) {
+  return { type: 'Identifier', name: name }
+}
+
+AST.Literal = function(value) {
+  let raw = JSON.stringify(value)
+  if (typeof value !== 'string') raw = `"${raw}"`
+
+  return { type: 'Literal', value: value, raw: raw }
+}
+
+AST.MemberExpression = function(object, property) {
+  return {
+    type: 'MemberExpression',
+    object, property
+  }
+}
+
+AST.ConditionalExpression = function(test, consequent, alternate) {
+  return {
+    type: 'ConditionalExpression',
+    test, consequent, alternate
+  }
+}
+
+
+module.exports = { from, AST }
 
 
 

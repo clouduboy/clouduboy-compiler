@@ -7,6 +7,8 @@ const getObject = require('./getObject.js');
 
 const lookup = require('./lookup.js');
 
+const { AST } = require('./ast.js');
+
 let translate;
 
 
@@ -101,16 +103,16 @@ function translateLib(exp, callexp) {
           callexp.arguments[0],
           callexp.arguments[1],
           callexp.arguments[2],
-          astMemberExpression(s1, astID('width')),
-          astMemberExpression(s1, astID('height')),
+          AST.MemberExpression(s1, AST.Identifier('width')),
+          AST.MemberExpression(s1, AST.Identifier('height')),
 
           callexp.arguments[3+0],
           callexp.arguments[3+1],
           callexp.arguments[3+2],
-          astMemberExpression(s2, astID('width')),
-          astMemberExpression(s2, astID('height')),
+          AST.MemberExpression(s2, AST.Identifier('width')),
+          AST.MemberExpression(s2, AST.Identifier('height')),
 
-          astLiteral( callexp.arguments[3+3+1] ? true : false )
+          AST.Literal( callexp.arguments[3+3+1] ? true : false )
         ]);
         break;
     }
@@ -254,23 +256,3 @@ module.exports = function(callback) {
   translate = callback;
   return translateLib;
 };
-
-
-function astID(name) {
-  return { type: 'Identifier', name: name };
-}
-
-function astLiteral(value) {
-  let raw = JSON.stringify(value);
-  if (typeof value !== 'string') raw = `"${raw}";`
-
-  return { type: 'Literal', value: value, raw: raw };
-}
-
-function astMemberExpression(object, property) {
-  return {
-    type: 'MemberExpression',
-    object: object,
-    property: property
-  };
-}

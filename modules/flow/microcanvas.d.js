@@ -31,6 +31,7 @@ declare class MicroCanvas {
   // MicroCanvas library additions for easier game development
   loadSprite(pif: string): MicroCanvasGFXObject;
 
+  clearImage(sprite: MicroCanvasGFXObject, x: number, y: number): void;
   eraseImage(sprite: MicroCanvasGFXObject, x: number, y: number): void;
   centerText(x: number, y: number, text: string): void;
   clear(): void;
