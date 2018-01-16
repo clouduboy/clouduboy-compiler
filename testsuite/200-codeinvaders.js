@@ -4,7 +4,7 @@ let game = new MicroCanvas();
 
 let gfxInvader, gfxInvader2, gfxDefender;
 
-game.setup(function(game) {
+game.setup(function() {
   gfxInvader = game.loadSprite(
     `PROGMEM const unsigned char invader[] = { /*9x6*/ 0x38, 0x1c, 0x35, 0x1e, 0x3c, 0x1e, 0x35, 0x1c, 0x38 }`
   );
