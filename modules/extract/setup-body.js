@@ -85,6 +85,8 @@ function loadGfx(game, id, args) {
   //game.gfx[id].meta = arrayInitializerHints(game.gfx[id].value)
   let px = new PixelData(str)
 
+  // TODO: TypeError: Cannot set property 'meta' of undefined
+  // occurs when gfx image wasn't declared on the global scope.
   game.gfx[id].meta = px
   game.gfx[id].value = px.c()
 

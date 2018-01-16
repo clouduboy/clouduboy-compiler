@@ -13,7 +13,7 @@ CFG.TARGETS = require('./target-platforms/platforms')
 
 
 
-let srcFile = process.argv[2] || './game.js'
+let srcFile = process.argv[2] || 'data/game.js'
 let targetSystem = process.argv[3] || 'arduboy'
 console.log(process.argv.length)
 
@@ -34,9 +34,9 @@ ${Object.keys(CFG.TARGETS).join(', ')}
     let game = build(targetSystem, fs.readFileSync(srcFile), require('path').basename(srcFile))
 
     // Save
-    fs.writeFileSync('ast.json', JSON.stringify(game.ast))
-    fs.writeFileSync('game.json', JSON.stringify(game, null, 2))
-    fs.writeFileSync('game.ino', game.ino||'')
+    fs.writeFileSync('data/ast.json', JSON.stringify(game.ast, null, 2))
+    fs.writeFileSync('data/game.json', JSON.stringify(game, null, 2))
+    fs.writeFileSync('data/game.ino', game.ino||'')
   }
 }
 

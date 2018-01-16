@@ -121,7 +121,7 @@ function pGuessType(id, value, hint) {
 
   if (typeof hint == 'object') {
     if (hint.init) {
-      console.log('- guessing type based on decl.: ', hint.type, hint.init)
+      //console.log('- guessing type based on decl.: ', hint.type, hint.init)
       switch (hint.init.type) {
         case 'Literal':
           return 'int' // TODO: strings, floats, bytes & unsigneds

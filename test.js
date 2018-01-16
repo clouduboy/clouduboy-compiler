@@ -33,7 +33,7 @@ b = game.ino;
 d = diff.diffTrimmedLines(a.replace(/\r\n/g,'\n').trim(),b.replace(/\r\n/,'\n').trim());
 
 console.log('Compilation finished: ', testfile);
-fs.writeFileSync('.lasttest.ino', game.ino);
+fs.writeFileSync('data/.lasttest.ino', game.ino);
 
 if (process.argv.filter(arg => arg==='--json').length) {
   fs.writeFileSync('game.json', JSON.stringify(game));

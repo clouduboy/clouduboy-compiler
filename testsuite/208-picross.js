@@ -230,7 +230,7 @@ let startGame = function () {
   timeStart = new Date();
 }
 
-game.setup(function(game) {
+game.setup(function() {
   gfxWin = game.loadSprite(`! win 13x5
 .............
 .#...#.#.#..#
