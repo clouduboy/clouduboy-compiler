@@ -22,25 +22,39 @@ module.exports = function(context) {
 
   // Simple one-on-one mappings
   switch (prop) {
-    // Math.round
+    // Math.round( <float> )
     case 'round':
       return { call: 'round', args: callexp.arguments }
 
-    // Math.floor
+    // Math.floor( <float> )
     case 'floor':
-      return { call: 'floor', args: callexp.arguments }
+      // A cast to int is required to use value in expressions like '%'
+      // TODO: only use cast when it's needed or requested ( check the
+      // surroundings of the expression)
+      return { call: '(int)floor', args: callexp.arguments }
 
-    // Math.abs
+    // Math.abs( <number> )
     case 'abs':
       return { call: 'abs', args: callexp.arguments }
 
-    // Math.random
+    // Math.random()
     // TODO: review proper syntax
     case 'random':
       return { call: 'random', args: callexp.arguments }
 
-    // TODO: Math.min
-    // TODO: Math.max
+    // Math.min( <number1>[, <number2>] )
+    // Math.max( <number1>[, <number2>] )
+    case 'min':
+    case 'max':
+      // Both of these are generally implemented as macros, and will fail
+      // when there are less than two arguments. In those cases we just return
+      // the first argument with no min/max calls at all.
+      if (callexp.arguments.length < 2) {
+        return { expression: callexp.arguments[0] }
+      }
+
+      // TODO: Warn that maximum two arguments are allowed
+      return { call: prop, args: callexp.arguments.slice(0,2) }
   }
 
 
