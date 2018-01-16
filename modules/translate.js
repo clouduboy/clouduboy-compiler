@@ -37,9 +37,11 @@ function translate(exp, callexp) {
     // Member expressions are usually translated to built-in methods
     case 'MemberExpression':
       const obj = self(exp.object);
-      const deepObj = AST.getMemberExpressionDeepObjectId();
+      //const deepObj = AST.getMemberExpressionDeepObjectId();
 
       // Computed expression, could be array access
+      // TODO: this only caters for the initializer-type global array
+      // definitions, and needs to be folded into transforms/array
       if (exp.computed) {
         // Check in globals, TODO: find variable in-scope
         let glob = self.game.globals[obj]
@@ -51,12 +53,14 @@ function translate(exp, callexp) {
       }
 
       // MicroCanvas calls
-      if (obj === self.game.alias || obj.match(/^(g|s)fx/)){ // Game asset properties (gfx & sfx)
-        return translateLib(exp, callexp);
+      //if (obj === self.game.alias || obj.match(/^(g|s)fx/)){ // Game asset properties (gfx & sfx)
+      //  return translateLib(exp, callexp);
+      //
+      //} else if (deepObj && deepObj.match(/^(g|s)fx/)) { // Game asset properties (gfx & sfx)
+      //  return translateLib(exp, callexp);
 
-      } else if (deepObj && deepObj.match(/^(g|s)fx/)) { // Game asset properties (gfx & sfx)
+      if (true) {
         return translateLib(exp, callexp);
-
       // Some other library
       } else {
         // Simple property access
@@ -153,9 +157,11 @@ function translate(exp, callexp) {
       // Special handling required for some game.* objects
       if (exp.type == 'AssignmentExpression'
         && exp.left.type == "MemberExpression"
-       //&& getString(exp.left) == self.game.alias+'.playbackRate'
       ) {
-        return translateLib(exp.left, exp);
+        const r = translateLib(exp);
+
+        // Only finish early if we have received a transform result
+        if (r !== undefined) return r;
       }
 
       let parens = false;
@@ -173,6 +179,11 @@ function translate(exp, callexp) {
 
       // Add parentesis for bitwise <</>> operators
       if (exp.type === 'BinaryExpression' && (op === '<<' || op === '>>')) {
+        parens = true;
+      }
+
+      // Add parentesis for compund assignment operators /=,*=
+      if (exp.type === 'AssignmentExpression' && (op === '/=' || op === '*=')) {
         parens = true;
       }
 

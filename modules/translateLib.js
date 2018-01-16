@@ -18,6 +18,17 @@ function transformResult(r) {
     return r;
   }
 
+  // Transform was a no-op
+  // One of the transform modules could handle the expression, but
+  // decided not to. This usually happens when the transform wants
+  // to handle some of the deeper/underlying elements, but doesn't
+  // want to deal with the current whole expression.
+  // A good example of this is what happens when translating
+  // AssignmentExpressions with Arrays as assignment targets.
+  if (typeof r == 'object' && 'noop' in r) {
+    return undefined
+  }
+
   // Array returned, transform & join individual results into a single string
   if (typeof r == 'object' && r.length > 0) {
     return '{\n' + Array.from(r).map( result => transformResult(result) ).join(';\n') + ';\n}'
@@ -32,6 +43,11 @@ function transformResult(r) {
   if (typeof r == 'object' && 'call' in r) {
     // '<target>' string in call properties are replaced with the actual game target
     return r.call.replace('<target>',translate.game.target) + translate.args(r.args)
+  }
+
+  // Array/member accessor
+  if (typeof r == 'object' && 'array' in r) {
+    return r.array + translate.arrs([ r.item ])
   }
 }
 
