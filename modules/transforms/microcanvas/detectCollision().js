@@ -36,7 +36,7 @@ module.exports = (context) => {
   if (callexp.arguments[6]) {
     // TODO: this will only work for literals
     precise = JSON.parse(callexp.arguments[6].value) ? true : false
-  })
+  }
   // TODO: Implement and set default to "true"
 
   // Sprites 1 & 2

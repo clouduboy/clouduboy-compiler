@@ -30,6 +30,22 @@ function transformResult(r) {
   }
 }
 
+// Generate mappings for available transforms
+let availableTransforms = []
+function collectTransforms() {
+  const path = require('path'),
+        fs = require('fs')
+
+  // List transforms folder
+  availableTransforms = fs.readdirSync(path.join(__dirname, 'transforms'))
+    // Find all modules
+    .filter(f => f.match(/\.js$/))
+    // Strip file extension
+    .map(f => path.basename(f, '.js'))
+
+  return availableTransforms
+}
+
 // Translate library/framework/global method or property
 // TODO: eventually translateLib should go away, and translate
 // should operate on the translate transforms itself
@@ -70,22 +86,18 @@ function translateLib(exp, callexp) {
     });
   }
 
-  // Standard maths calls cross-compilation
-  if (obj === 'Math') {
-    let tfr = require('./transforms/math')(context)
-    if (tfr) return transformResult(tfr)
-  }
-
-  // MicroCanvas library method/property or object (e.g. Sprite, Sound objects etc.)
-  let tfr = require('./transforms/microcanvas')(context)
-  if (tfr) return transformResult(tfr)
-
-  // TODO: do automatic detection of transforms (load all modules) and leave it to the
+  // Automatic detection of transforms (load all modules) and leave it to the
   // transform modules themselves to figure it out whether or not they can transform
   // the passed node.
   // Transform modules should return "undefined" when they cannot transform the passed
   // node, in which case an another transform will be tried.
-  // In the future it might be worthwile to build a dispatcher that extracts this
+  // Try to transform the current node:
+  for (let tf of availableTransforms) {
+    let tfr = require('./transforms/'+tf)(context)
+
+    if (tfr) return transformResult(tfr)
+  }
+  // TODO: In the future it might be worthwile to build a dispatcher that extracts this
   // info from the modules on load time and speeds up the process but this should
   // only be a performance improvement when several modules hog the speed of the
   // translation process.
@@ -98,5 +110,9 @@ function translateLib(exp, callexp) {
 
 module.exports = function(callback) {
   translate = callback;
+
+  // Initialize list of available transforms
+  collectTransforms();
+
   return translateLib;
 };

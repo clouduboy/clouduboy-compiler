@@ -14,6 +14,29 @@ const { AST } = require('../ast')
 const lookup = require('../lookup')
 
 
+// Generate mappings for available transforms
+let availableTransforms
+function collectTransforms() {
+  // Only perform once
+  if (availableTransforms) return;
+  // TODO: better way to do this?
+
+  const path = require('path'),
+        fs = require('fs')
+
+  // List transforms folder
+  availableTransforms = new Set(
+    fs.readdirSync(path.join(__dirname, 'microcanvas'))
+    // Find all modules
+    .filter(f => f.match(/\.js$/))
+    // Strip file extension
+    .map(f => path.basename(f, '.js'))
+  )
+
+  return availableTransforms
+}
+
+
 module.exports = function(context) {
   // Expand passed-in context object
   const { translate, exp, obj, prop, callexp } = context
@@ -31,24 +54,24 @@ module.exports = function(context) {
 
   // MicroCanvas library property/method access
   if (obj === translate.game.alias) {
-    // Property access
-    // TODO: auto-detect available property transforms
-    switch (prop) {
-      case 'width':
-      case 'height':
-      case 'state':
-      case 'frameCount':
-      case 'frameRate':
-      case 'playbackRate':
-        return require('./microcanvas/'+prop)(context)
+    // Make sure we have a list of available transforms
+    collectTransforms()
+
+    // Transform result
+    let tfr
+
+    // Check if we have a method transform for this object
+    if (availableTransforms.has(prop+'()')) {
+      tfr = require(`./microcanvas/${prop}()`)(context)
     }
 
-    // MicroCanvas library method calls
-    if (callexp) {
-      // TODO: auto-detect available library call transforms, or at least try-catch
-      // transforms that are not available (as those currently crash on missing require)
-      return require('./microcanvas/'+prop+'()')(context)
+    // Check if we have a property transform for this object
+    if (availableTransforms.has(prop)) {
+      tfr = require(`./microcanvas/${prop}`)(context)
     }
+
+    // Make sure the transform could handle the node
+    if (tfr) return tfr
   }
 
 
