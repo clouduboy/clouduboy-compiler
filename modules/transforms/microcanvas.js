@@ -8,33 +8,16 @@ It deals with microcanvas (game.*) properties, methods as well as
 the supported asset objects (gfxSomething/sfxSomething etc.)
 */
 
+// The group of transforms this transform module describes
+const transformFamily = require('path').basename(__filename, '.js')
+
+const collectTransforms = require('../collectTransforms.js')
+let availableTransforms
+
 const { AST } = require('../ast')
 
 // TODO: remove dependency
 const lookup = require('../lookup')
-
-
-// Generate mappings for available transforms
-let availableTransforms
-function collectTransforms() {
-  // Only perform once
-  if (availableTransforms) return;
-  // TODO: better way to do this?
-
-  const path = require('path'),
-        fs = require('fs')
-
-  // List transforms folder
-  availableTransforms = new Set(
-    fs.readdirSync(path.join(__dirname, 'microcanvas'))
-    // Find all modules
-    .filter(f => f.match(/\.js$/))
-    // Strip file extension
-    .map(f => path.basename(f, '.js'))
-  )
-
-  return availableTransforms
-}
 
 
 module.exports = function(context) {
