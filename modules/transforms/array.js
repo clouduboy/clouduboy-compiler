@@ -59,9 +59,9 @@ module.exports = function(context) {
 
     // TODO: array initializer syntax on global declarations currently
     // doesn't generate a typeInfo property
-    if (glob.typeInfo.array) {
+    if (glob.typeInfo && glob.typeInfo.array) {
       return { array: obj, item: exp.property }
-    }
+    } else return `__arrayAccess("${AST.getString(exp)}")`
   }
 
   // Assignment to array item

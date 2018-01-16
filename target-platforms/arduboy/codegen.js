@@ -54,10 +54,12 @@ module.exports = function(game) {
     game.globals.filter(dec => dec.type!=='function'&&dec.type!=='generator').forEach(c => {
       // Array initializer
       if (c.typeInfo ) {
-        b += c.typeInfo.type +' '+ c.cid + c.typeInfo.translatedSize
+        if (c.typeInfo.elements) {
+          b += c.typeInfo.baseType +' '+ c.cid +'[]'
+        } else {
+          b += c.typeInfo.baseType +' '+ c.cid + c.typeInfo.translatedSize
+        }
 
-      } else if (c.type && (c.type == 'char[]' || c.type == 'byte[]')) {
-        b += c.type.substr(0,4) +' '+ c.cid +'[]'
 
       } else {
         b += (c.type ? c.type : game.guessType(c.id, c.value)) +' ';

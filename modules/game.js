@@ -138,11 +138,12 @@ function pGuessType(id, value, hint) {
 
         // myVar = new Array(size)
         case 'NewExpression':
-          return { array: true, type: 'int', size: hint.init.arguments}
+          return { array: true, type: 'int[]', baseType: 'int', size: hint.init.arguments }
 
         // var = [ ... ]
         case 'ArrayExpression':
-          return 'byte[]'
+          return { array: true, type: 'int[]', baseType: 'int', elements: hint.init.elements.length }
+          //return 'byte[]'
       }
     }
   }

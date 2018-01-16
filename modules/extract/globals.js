@@ -52,7 +52,14 @@ function parse(game) {
 
           // Do size translation on the initializer if necessary
           if (v.typeInfo && v.typeInfo.array === true) {
-            v.typeInfo.translatedSize = translate.arrs(v.typeInfo.size)
+            // Size is an expression
+            if (typeof v.typeInfo.size === 'object') {
+              v.typeInfo.translatedSize = translate.arrs(v.typeInfo.size)
+
+            // Size is an element number
+            } else if (typeof v.typeInfo.elements === 'number') {
+              v.typeInfo.translatedSize = `${v.typeInfo.elements}*LENGTHOF(${v.cid})`
+            }
           }
 
           game.globals.push(v)
