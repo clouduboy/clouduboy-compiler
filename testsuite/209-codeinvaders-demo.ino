@@ -17,7 +17,7 @@ char _microcanvas_textbuffer[32];
 unsigned int _microcanvas_state;
 
 // global current drawing color
-_microcanvas_fill_color = WHITE;
+unsigned int _microcanvas_fill_color = WHITE;
 
 PROGMEM const unsigned char gfx_invader[] = {
   /*9x8x2*/ 0x70, 0x38, 0xea, 0x3c, 0x78, 0x3c, 0xea, 0x38, 0x70, 0x70, 0x38, 0x6a, 0xbc, 0x38, 0xbc, 0x6a, 0x38, 0x70 };
@@ -59,7 +59,7 @@ const byte GFX_BOMB_FRAMESIZE = 5;
 int rocket_x;
 int rocket_y;
 int turret_x;
-int invaders;
+int invaders[ INVADER_ALIENS * INVADER_WAVES ];
 int total_invaders;
 int game_over;
 int defeat_after = 0;
@@ -100,7 +100,7 @@ arduboy.drawBitmap( WIDTH / 2 - GFX_INVADER_WIDTH / 2, HEIGHT / 2 - GFX_INVADER_
 _microcanvas_fill_color = WHITE;
 {
 arduboy.setTextSize( 1 );
-arduboy.setCursor( WIDTH / 2 - " OH NO!".length() * 6 / 2, HEIGHT / 2 );
+arduboy.setCursor( WIDTH / 2 - strlen(" OH NO!") * 6 / 2, HEIGHT / 2 );
 arduboy.print( " OH NO!" );
 };
 if (defeat_after == 0) defeat_after = _microcanvas_frame_counter;
@@ -108,12 +108,12 @@ if (defeat_after > 0 && (_microcanvas_frame_counter - defeat_after) > 3 * 60) {
   _microcanvas_fill_color = WHITE;
   {
 arduboy.setTextSize( 1 );
-arduboy.setCursor( WIDTH / 2 - "SPACE to try again".length() * 6 / 2, HEIGHT / 4 * 3 );
+arduboy.setCursor( WIDTH / 2 - strlen("SPACE to try again") * 6 / 2, HEIGHT / 4 * 3 );
 arduboy.print( "SPACE to try again" );
 };
   if (arduboy.pressed( A_BUTTON )) {
   defeat_after = 0;
-  arduboy.reset();
+  setup();
 }
 }
 
@@ -128,7 +128,7 @@ if (defender_win_animation_remaining() > 0) {
 _microcanvas_fill_color = WHITE;
 {
 arduboy.setTextSize( 1 );
-arduboy.setCursor( WIDTH / 2 - " HUMANITY PREVAILS!".length() * 6 / 2, HEIGHT / 2 );
+arduboy.setCursor( WIDTH / 2 - strlen(" HUMANITY PREVAILS!") * 6 / 2, HEIGHT / 2 );
 arduboy.print( " HUMANITY PREVAILS!" );
 };
 
@@ -143,7 +143,7 @@ int y = 0;
 while (y < INVADER_WAVES) {
   int x = 0;
   while (x < INVADER_ALIENS) {
-  if ((invaders).x + INVADER_ALIENS * y) {
+  if (invaders[ x + INVADER_ALIENS * y ]) {
   int d_y = invasion + y * (GFX_INVADER_HEIGHT + 1);
   if ((d_y + GFX_INVADER_HEIGHT) >= (HEIGHT - GFX_DEFENDER_HEIGHT)) {
   game_over = true;
@@ -152,14 +152,14 @@ while (y < INVADER_WAVES) {
   if (y % 2) {
   arduboy.drawBitmap( (start_x + (invader_x - 3)) + x * (GFX_INVADER_WIDTH + 4), d_y, gfx_invader + GFX_INVADER_FRAMESIZE*((invader_x >> 1) & 1), GFX_INVADER_WIDTH, GFX_INVADER_HEIGHT, WHITE );
   if (rocket_y >= 3 && collides( gfx_invader + GFX_INVADER_FRAMESIZE*((invader_x >> 1) & 1), (start_x + (invader_x - 3)) + x * (GFX_INVADER_WIDTH + 4), d_y, GFX_INVADER_WIDTH, GFX_INVADER_HEIGHT, gfx_rocket, rocket_x, rocket_y, GFX_ROCKET_WIDTH, GFX_ROCKET_HEIGHT, "false" )) {
-  invaders[x + INVADER_ALIENS * y] = 0;
+  invaders[ x + INVADER_ALIENS * y ] = 0;
   total_invaders--;
   rocket_y = 0;
 }
 } else {
   arduboy.drawBitmap( (start_x - (invader_x - 3)) + x * (GFX_INVADER_WIDTH + 4), d_y, gfx_invader_2, GFX_INVADER_2_WIDTH, GFX_INVADER_2_HEIGHT, WHITE );
   if (rocket_y >= 3 && collides( gfx_invader_2, (start_x - (invader_x - 3)) + x * (GFX_INVADER_WIDTH + 4), d_y, GFX_INVADER_2_WIDTH, GFX_INVADER_2_HEIGHT, gfx_rocket, rocket_x, rocket_y, GFX_ROCKET_WIDTH, GFX_ROCKET_HEIGHT, "false" )) {
-  invaders[x + 8 * y] = 0;
+  invaders[ x + 8 * y ] = 0;
   total_invaders--;
   rocket_y = 0;
 }
@@ -177,8 +177,9 @@ arduboy.fillRect( WIDTH / 2 - 7, 0, 13, 9, BLACK );
 _microcanvas_fill_color = WHITE;
 {
 arduboy.setTextSize( 1 );
-arduboy.setCursor( WIDTH / 2 - ",".length() * 6 / 2, 0 );
-arduboy.print( "," );
+sprintf(_microcanvas_textbuffer, "%u", game_timer_animation_remaining()/60);
+arduboy.setCursor( WIDTH / 2 - strlen(_microcanvas_textbuffer) * 6 / 2, 0 );
+arduboy.print( _microcanvas_textbuffer );
 };
 
 }
@@ -197,7 +198,7 @@ return x;
 int defender_win_animation() {
 ////// FUNCTION BODY //////
 int t = min( _microcanvas_frame_counter - defender_win_animation_start, DEFENDER_WIN_ANIMATION_DURATION );
-int x = (ease_cubic_in( null, t, 10 * (HEIGHT - GFX_DEFENDER_HEIGHT), -10 * (HEIGHT - GFX_DEFENDER_HEIGHT), DEFENDER_WIN_ANIMATION_DURATION ) + 5) / 10 | 0;
+int x = (ease_cubic_in( 0, t, 10 * (HEIGHT - GFX_DEFENDER_HEIGHT), -10 * (HEIGHT - GFX_DEFENDER_HEIGHT), DEFENDER_WIN_ANIMATION_DURATION ) + 5) / 10 | 0;
 return x;
 
 }
@@ -208,7 +209,7 @@ return 60 - (_microcanvas_frame_counter - defender_win_animation_start);
 }
 int ease_cubic_in(int x, int t, int b, int c, int d) {
 ////// FUNCTION BODY //////
-return c * t /= d * t * t + b;
+return c * (t /= d) * t * t + b;
 
 }
 int game_timer_animation() {
@@ -217,9 +218,9 @@ int t = min( _microcanvas_frame_counter - game_timer_animation_start, GAME_TIMER
 int duration_1 = 60 * 1; int duration_2 = 60 * 24;
 int x;
 if (t < duration_1) {
-  x = (ease_cubic_in( null, t, 10 * 0, 10 * 0, duration_1 ) + 5) / 10 | 0;
+  x = (ease_cubic_in( 0, t, 10 * 0, 10 * 0, duration_1 ) + 5) / 10 | 0;
 } else {
-  x = (ease_cubic_in( null, t - duration_1, 10 * 0, 10 * (((HEIGHT - GFX_DEFENDER_HEIGHT) - GFX_INVADER_HEIGHT) + 1), duration_2 ) + 5) / 10 | 0;
+  x = (ease_cubic_in( 0, t - duration_1, 10 * 0, 10 * (((HEIGHT - GFX_DEFENDER_HEIGHT) - GFX_INVADER_HEIGHT) + 1), duration_2 ) + 5) / 10 | 0;
 }
 return x;
 
@@ -240,8 +241,8 @@ void setup() {
 turret_x = WIDTH / 2;
 rocket_x = 0;
 rocket_y = 0;
-invaders = for (int _a_fill_idx_ = 0; _a_fill_idx_ < sizeof(invaders); ++_a_fill_idx_) invaders[_a_fill_idx_] = ?;;
-total_invaders = (invaders).undefined;
+for (unsigned int _a_fill_idx_ = 0; _a_fill_idx_ < sizeof( invaders ); ++_a_fill_idx_) invaders[_a_fill_idx_] = 1;
+total_invaders = sizeof( invaders );
 game_over = false;
 defender_win_animation_start = 0;
 game_timer_animation_start = 0;

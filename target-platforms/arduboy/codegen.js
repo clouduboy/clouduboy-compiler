@@ -49,7 +49,10 @@ module.exports = function(game) {
   if (game.globals) {
     game.globals.filter(dec => dec.type!=='function'&&dec.type!=='generator').forEach(c => {
       // Array initializer
-      if (c.type && (c.type == 'char[]' || c.type == 'byte[]')) {
+      if (c.typeInfo ) {
+        b += c.typeInfo.type +' '+ c.cid + c.typeInfo.translatedSize
+
+      } else if (c.type && (c.type == 'char[]' || c.type == 'byte[]')) {
         b += c.type.substr(0,4) +' '+ c.cid +'[]'
 
       } else {

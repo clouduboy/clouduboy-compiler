@@ -98,7 +98,7 @@ game.setup(function() {
   rocketY = 0;
 
   // All aliens are alive and happily invading!
-  invaders = invaders.fill(1);
+  invaders.fill(1);
   totalInvaders = invaders.length;
 
   // Game is just about to start
@@ -343,7 +343,7 @@ function defender_win_animation() {
   // MIN(currentframe-startframe, duration) - capped at "duration"
 
   // first stop
-  const x = ((easeCubicIn(null, t, 10*(game.height-gfxDefender.height), -10*(game.height-gfxDefender.height), defender_win_animation_duration)+5)/10)|0
+  const x = ((easeCubicIn(0, t, 10*(game.height-gfxDefender.height), -10*(game.height-gfxDefender.height), defender_win_animation_duration)+5)/10)|0
   //rounded easeCubicIn(null, t, game.height-defender.height, -(game.height-defender.height), duration)
 
   return x
@@ -380,11 +380,11 @@ function game_timer_animation() {
 
   // first stop
   if (t < duration1) {
-    x = ((easeCubicIn(null, t, 10*0, 10*0, duration1)+5)/10)|0
+    x = ((easeCubicIn(0, t, 10*0, 10*0, duration1)+5)/10)|0
     //rounded easeCubicIn(null, t, 0, 0, duration)
   //} else if (t <= duration1+duration2) { // TODO: last stop, not needed
   } else {
-    x = ((easeCubicIn(null, t-duration1, 10*0, 10*(game.height-gfxDefender.height-gfxInvader.height+1), duration2)+5)/10)|0
+    x = ((easeCubicIn(0, t-duration1, 10*0, 10*(game.height-gfxDefender.height-gfxInvader.height+1), duration2)+5)/10)|0
     //rounded easeCubicIn(null, t-duration1, 0, (game.height-8-gfxInvader.height), duration2)//|0
   }
 
