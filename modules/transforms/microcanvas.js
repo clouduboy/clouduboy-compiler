@@ -35,26 +35,27 @@ module.exports = function(context) {
   )) return undefined
 
 
-  // MicroCanvas library property/method access
-  if (obj === translate.game.alias) {
-    // Make sure we have a list of available transforms
-    collectTransforms()
+  // Make sure we have a list of available transforms
+  if (!availableTransforms) availableTransforms=collectTransforms(`${__dirname}/${transformFamily}`)
 
+
+  // Top level MicroCanvas library property/method access
+  if (obj === translate.game.alias) {
     // Transform result
     let tfr
 
     // Check if we have a method transform for this object
     if (availableTransforms.has(prop+'()')) {
-      tfr = require(`./microcanvas/${prop}()`)(context)
+      tfr = require(`./${transformFamily}/${prop}()`)(context)
     }
 
     // Check if we have a property transform for this object
     if (availableTransforms.has(prop)) {
-      tfr = require(`./microcanvas/${prop}`)(context)
+      tfr = require(`./${transformFamily}/${prop}`)(context)
     }
 
     // Make sure the transform could handle the node
-    if (tfr) return tfr
+    if (tfr !== undefined) return tfr
   }
 
 
