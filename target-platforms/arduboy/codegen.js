@@ -10,6 +10,10 @@ module.exports = function(game) {
   // Header
   b += header().trim()+'\n\n';
 
+  // Macro Helpers
+  b += builtins('arrays').trim()+'\n\n';
+
+
   // Assets
   // Graphics
   if (game.gfx) {
@@ -171,5 +175,8 @@ function builtins(id) {
 
     case 'generators':
       return fs.readFileSync(path.join(__dirname, 'built-ins/microcanvas_yield.ino')).toString();
+
+    case 'arrays':
+      return fs.readFileSync(path.join(__dirname, 'built-ins/LENGTHOF.ino')).toString();
   }
 }

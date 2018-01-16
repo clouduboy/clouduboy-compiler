@@ -1,4 +1,4 @@
-// myArray.length => sizeof(my_array)
+// myArray.length => LENGTHOF(my_array)
 
 /*
 @valides5
@@ -11,7 +11,7 @@ module.exports = (context) => {
 
   // simple mapping to a global function
   return ({
-    call: 'sizeof',
+    call: 'LENGTHOF',
     args: [ obj ]
   })
 }

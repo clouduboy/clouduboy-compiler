@@ -146,8 +146,8 @@ game.loop(function() {
 
 
     // Enforce screen boundaries
-    if ( turretX < 0 ) {
-      turretX = 0;
+    if ( turretX < gfxDefender.width/2+1 ) {
+      turretX = gfxDefender.width/2+1;
     }
 
     if ( turretX > game.width-gfxDefender.width/2) {
