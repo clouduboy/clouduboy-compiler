@@ -19,6 +19,8 @@ unsigned int _microcanvas_state;
 // global current drawing color
 unsigned int _microcanvas_fill_color = WHITE;
 
+#define LENGTHOF(x)  (sizeof(x) / sizeof(x[0]))
+
 PROGMEM const unsigned char gfx_invader[] = {
   /*9x8x2*/ 0x70, 0x38, 0xea, 0x3c, 0x78, 0x3c, 0xea, 0x38, 0x70, 0x70, 0x38, 0x6a, 0xbc, 0x38, 0xbc, 0x6a, 0x38, 0x70 };
 PROGMEM const unsigned char gfx_defender[] = {
@@ -65,6 +67,12 @@ int game_over;
 int defeat_after = 0;
 int defender_win_animation_start = 0;
 int game_timer_animation_start = 0;
+
+// t: current time, b: beginning value, c: change in value, d: duration
+int ease_cubic_in(int x, int t, int b, int c, int d) {
+  float td= (float)t/(float)d;
+  return (int)(c * td*td*td + b +.5);
+}
 
 boolean collides(
   const unsigned char* s1, int x1,int y1, int s1_width, int s1_height,
@@ -207,11 +215,6 @@ int defender_win_animation_remaining() {
 return 60 - (_microcanvas_frame_counter - defender_win_animation_start);
 
 }
-int ease_cubic_in(int x, int t, int b, int c, int d) {
-////// FUNCTION BODY //////
-return c * (t /= d) * t * t + b;
-
-}
 int game_timer_animation() {
 ////// FUNCTION BODY //////
 int t = min( _microcanvas_frame_counter - game_timer_animation_start, GAME_TIMER_ANIMATION_DURATION );
@@ -241,8 +244,8 @@ void setup() {
 turret_x = WIDTH / 2;
 rocket_x = 0;
 rocket_y = 0;
-for (unsigned int _a_fill_idx_ = 0; _a_fill_idx_ < sizeof( invaders ); ++_a_fill_idx_) invaders[_a_fill_idx_] = 1;
-total_invaders = sizeof( invaders );
+for (unsigned int _a_fill_idx_ = 0; _a_fill_idx_ < LENGTHOF( invaders ); ++_a_fill_idx_) invaders[_a_fill_idx_] = 1;
+total_invaders = LENGTHOF( invaders );
 game_over = false;
 defender_win_animation_start = 0;
 game_timer_animation_start = 0;
@@ -272,8 +275,8 @@ if (total_invaders > 0 && !game_over) {
   if (arduboy.pressed( RIGHT_BUTTON )) {
   turret_x = turret_x + 3;
 }
-  if (turret_x < 0) {
-  turret_x = 0;
+  if (turret_x < (GFX_DEFENDER_WIDTH / 2 + 1)) {
+  turret_x = GFX_DEFENDER_WIDTH / 2 + 1;
 }
   if (turret_x > (WIDTH - GFX_DEFENDER_WIDTH / 2)) {
   turret_x = WIDTH - GFX_DEFENDER_WIDTH / 2;
@@ -290,3 +293,4 @@ if (total_invaders > 0 && !game_over) {
 
   arduboy.display();
 }
+

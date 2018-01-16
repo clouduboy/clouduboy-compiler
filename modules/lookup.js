@@ -27,6 +27,14 @@ function lookup(exp) {
     return id;
   }
 
+  // It's an animation-related function (e.g. an easing function)
+  if (id.match(/^(easeCubicIn)$/)) {
+    // enable animations support
+    self.game.animations = true;
+
+    return utils.toSnakeCase(id);
+  }
+
   // Try to resolve identifier on the current scope
   let scopes = utils.walkParents(exp).reverse();
   for (let i=0; i<scopes.length; ++i) {

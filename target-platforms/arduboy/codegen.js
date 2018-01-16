@@ -79,6 +79,9 @@ module.exports = function(game) {
   }
 
   // Optional built-ins
+  if (game.animations) {
+    b += builtins('animations').trim()+'\n\n';
+  }
   if (game.generators) {
     b += builtins('generators').trim()+'\n\n';
   }
@@ -175,6 +178,10 @@ function builtins(id) {
 
     case 'generators':
       return fs.readFileSync(path.join(__dirname, 'built-ins/microcanvas_yield.ino')).toString();
+
+    case 'animations':
+      // TODO: conditional loading of used easings and features
+      return fs.readFileSync(path.join(__dirname, 'built-ins/ease_cubic_in.ino')).toString();
 
     case 'arrays':
       return fs.readFileSync(path.join(__dirname, 'built-ins/LENGTHOF.ino')).toString();

@@ -352,12 +352,6 @@ function defender_win_animation_remaining() {
   return Math.max(60 - (game.frameCount-defender_win_animation_start))
 }
 
-// t: current time, b: beginning value, c: change in value, d: duration
-function easeCubicIn(x, t, b, c, d) {
-  return c*(t/=d)*t*t + b;
-  // TODO: arduino-friendliness
-}
-
 /*
 animate([
   { uint: 0 }, // offset: 0
