@@ -72,12 +72,12 @@ function translateLib(exp, callexp) {
 
   // Standard maths calls cross-compilation
   if (obj === 'Math') {
-    let tfr = require('./translate/math')(context)
+    let tfr = require('./transforms/math')(context)
     if (tfr) return transformResult(tfr)
   }
 
   // MicroCanvas library method/property or object (e.g. Sprite, Sound objects etc.)
-  let tfr = require('./translate/microcanvas')(context)
+  let tfr = require('./transforms/microcanvas')(context)
   if (tfr) return transformResult(tfr)
 
   // TODO: do automatic detection of transforms (load all modules) and leave it to the
