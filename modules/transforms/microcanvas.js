@@ -27,12 +27,33 @@ module.exports = function(context) {
   // embedded member access: <deepObj>[...].<prop>
   const deepObj = AST.getMemberExpressionDeepObjectId(exp)
 
+
+  // A list of applicable concerns (transforms) this module is equipped
+  // to execute/handle.
+  let concerns = {}
+
+  // MicroCanvas library property access or method call
+  concerns.gamePropertyOrMethod = !!(obj === translate.game.alias)
+
+  // Assignment to MicroCanvas property (e.g. game.fillStyle = "white")
+  concerns.gamePropertyAssignment = !!(
+    exp.type === 'AssignmentExpression'
+    && exp.left.type === 'MemberExpression'
+    && exp.left.object.name === translate.game.alias
+  )
+
+  // MicroCanvas graphics/sound/etc asset (e.g.: gfxSomething.<prop>)
+  concerns.gfxAsset = !!(obj && obj.match(/^gfx/))
+  concerns.sfxAsset = !!(obj && obj.match(/^sfx/))
+
+  // Microcanvas multi-frame graphics asset (e.g.: gfxSomething[...].<prop>)
+  concerns.gfxAsset |= !!(deepObj && deepObj.match(/^gfx/))
+
   // Authority check: bail early if cannot translate the node
-  if (!(
-    obj === translate.game.alias // MicroCanvas library property/call
-    || obj.match(/^(g|s)fx/) // MicroCanvas graphics/sound/etc asset
-    || deepObj && deepObj.match(/^gfx/) // Microcanvas multi-frame graphics asset
-  )) return undefined
+  // We are looking at all concerns' values and if not a single one that
+  // applies then we are bailing early
+  if (Object.values(concerns).reduce((a,b) => a||b) === false) return undefined
+  //console.log('FOUND SOME CONCERNS, YEAH!', AST.getString(exp), Object.entries(concerns).filter(v=>v[1]).map(v=>v[0]).join(','))
 
 
   // Make sure we have a list of available transforms
@@ -40,7 +61,7 @@ module.exports = function(context) {
 
 
   // Top level MicroCanvas library property/method access
-  if (obj === translate.game.alias) {
+  if (concerns.gamePropertyOrMethod) {
     // Transform result
     let tfr
 
@@ -59,11 +80,23 @@ module.exports = function(context) {
   }
 
 
+  // MicroCanvas library property assignment
+  if (concerns.gamePropertyAssignment) {
+    const property = exp.left.property.name
+    let tfr
+
+    // Check if we have a property transform for this object
+    if (availableTransforms.has(property)) {
+      tfr = require(`./${transformFamily}/${property}`)(context)
+    }
+
+    // Make sure the transform could handle the node
+    if (tfr !== undefined) return tfr
+  }
+
+
   // Graphics asset property
-  if (
-    obj.match(/^gfx/) || // gfxSomething.<prop>
-    deepObj && deepObj.match(/^gfx/) // gfxSomething[...].<prop>
-  ) {
+  if (concerns.gfxAsset) {
     // PixelData web canvas object properties
     // exp.property.type = 'Identifier'
     switch (prop) {
@@ -96,13 +129,12 @@ module.exports = function(context) {
       // TODO: get rid of lookup()s here, use translate
       // translate(exp.object) + ' + ' + translate(ast.Identifier(obj+'Framesize'))+'*('+translate(prop)+')'
     }
-
   }
 
 
   // Sfx (tune) object
   // TODO: this is @experimental, sound (tunes) support should be reviewed
-  if (obj.match(/^sfx/)) {
+  if (concerns.sfxAsset) {
     return { call: '<target>.tunes.playScore',  args: [ obj ] }
   }
 
