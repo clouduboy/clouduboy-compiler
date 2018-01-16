@@ -7,7 +7,7 @@ const acorn = require('acorn')
 const Node = acorn.parse('function x() {}').body[0].constructor
 
 
-// AST helpers
+// AST helpers for node creation
 const AST = Object.create(null)
 
 AST.Identifier = function(name) {
@@ -35,13 +35,56 @@ AST.ConditionalExpression = function(test, consequent, alternate) {
   }
 }
 
+AST.CallExpression = function(callee, args) {
+  return {
+    type: 'CallExpression',
+    callee, arguments: args
+  }
+}
+
+AST.BinaryExpression = function(operator, left, right) {
+  return {
+    type: 'BinaryExpression',
+    operator, left, right
+  }
+}
+
+
+// Sometimes with embedded member expressions (e.g. object[member].prop) we need
+// to check the deep(est) object of the member expression, this is a helper that
+// does that.
+// memberExpDeepObjectId on the above object would return "object"
+AST.getMemberExpressionDeepObjectId = function(exp) {
+  // Expression not an object/AST node
+  if (typeof exp != 'object') return undefined
+
+  // Not an (embedded) expression
+  if (
+    exp.type != 'MemberExpression'
+    || typeof exp.object != 'object'
+    || exp.object.type != 'MemberExpression'
+  ) return undefined
+
+  // Return the embedded MemberExpression's object's "name"
+  // (assuming it's an Identifier)
+  return exp.object.object.name
+  // TODO: make this work for arbitrary depths (e.g. return o for o[x].a.b.c),
+  // this is currently not required anywhere by MicroCanvas, though.
+}
+
+
+// Original (source) string representation of the AST node
+AST.getString = require('./getString')
+
 
 module.exports = { from, AST }
 
 
 
+// Generate AST from JavaScript source
 function from(source) {
   // Parse AST
+  // TODO: consider using Flow for AST generation?
   let ast = acorn.parse(source, { ecmaVersion: 6, sourceType: 'script' })
 
   // Source

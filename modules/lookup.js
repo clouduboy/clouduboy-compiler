@@ -1,4 +1,4 @@
-  'use strict';
+'use strict';
 
 const getString = require('./getString.js');
 const utils = require('./utils.js');
@@ -10,6 +10,7 @@ function lookup(exp) {
   let self = lookup;
 
   // it's the MicroCanvas alias
+  // TODO: shouldn't this return translate.game.target instead?
   if (id === self.game.alias) return id;
 
   // It's an asset
@@ -21,6 +22,7 @@ function lookup(exp) {
   }
 
   // It's a built-in library global or constant
+  // TODO: move this to a global and make it configurable (e.g. dependent on target)
   if (id.match(/^(TRUE|FALSE|WIDTH|HEIGHT|WHITE|BLACK|INVERT)$/)) {
     return id;
   }

@@ -6,7 +6,7 @@ let gfxSpriteA, gfxSpriteB, gfxSpriteMulti;
 
 let variable = 1142;
 
-game.setup(function(game) {
+game.setup(function() {
   gfxSpriteA = game.loadSprite(`/* 1x1 */
     #`);
   gfxSpriteB = game.loadSprite(`/* 1x1 */

@@ -1,4 +1,10 @@
-// `Microcanvas.width` property
-// Contains the integer number that describes the useful pixel
-// width of the canvas (display).
-module.exports = (context) => 'WIDTH';
+// game.width   >>>   WIDTH
+
+/**
+@validhtml5
+(`number`) Pixel width of the canvas (device screen)
+
+On the target this is accessed via the `WIDTH` global constant
+*/
+
+module.exports = (context) => 'WIDTH'

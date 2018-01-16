@@ -1,28 +1,40 @@
-// `Microcanvas.drawImage(sprite, x, y)` method
-// translate.game.drawImage(gfx,x,y);   >>>    arduboy.drawBitmap(x,y, gfx, GFX_WIDTH,GFX_HEIGHT, WHITE);
-const { AST } = require('../../ast.js');
+// game.drawImage(gfx, x, y);   >>>    <target>.drawBitmap(x, y, gfx, GFX_WIDTH, GFX_HEIGHT, WHITE);
+
+/**
+@validhtml5
+(`void`) Draws an image on the screen.
+
+Draws the passed image sprite (or sprite frame) on the given coordinates
+on the screen/device display. Note, that in most native target compiled environments
+a double-buffering occurs, that means no changes are made to the display until the end
+of the frame (which is where <target>.display() gets called at the end of a `loop()`
+iteration).
+*/
+
+const { AST } = require('../../ast')
+
 
 module.exports = (context) => {
-  const {translate, callexp} = context;
+  const {translate, callexp} = context
 
-  let sA = callexp.arguments;
-  let argW, argH;
+  let sA = callexp.arguments
+  let argW, argH
 
   if (sA[0] && sA[0].type) {
-    let gfx;
+    let gfx
 
     switch (sA[0].type) {
       // drawImage( gfxFoo, ... )
       case 'Identifier':
-        argW = AST.MemberExpression(sA[0], AST.Identifier('width'));
-        argH = AST.MemberExpression(sA[0], AST.Identifier('height'));
-        break;
+        argW = AST.MemberExpression(sA[0], AST.Identifier('width'))
+        argH = AST.MemberExpression(sA[0], AST.Identifier('height'))
+        break
 
       // drawImage( gfxSprite[i] )
       case 'MemberExpression':
-        argW = AST.MemberExpression(sA[0].object, AST.Identifier('width'));
-        argH = AST.MemberExpression(sA[0].object, AST.Identifier('height'));
-        break;
+        argW = AST.MemberExpression(sA[0].object, AST.Identifier('width'))
+        argH = AST.MemberExpression(sA[0].object, AST.Identifier('height'))
+        break
 
       // drawImage( true ? gfxA : gfxB )
       case 'ConditionalExpression':
@@ -30,23 +42,24 @@ module.exports = (context) => {
           sA[0].test,
           AST.MemberExpression(sA[0].consequent, AST.Identifier('width')),
           AST.MemberExpression(sA[0].alternate,  AST.Identifier('width'))
-        );
+        )
         argH = AST.ConditionalExpression(
           sA[0].test,
           AST.MemberExpression(sA[0].consequent, AST.Identifier('height')),
           AST.MemberExpression(sA[0].alternate,  AST.Identifier('height'))
-        );
-        break;
+        )
+        break
 
       // Unsupported
       default:
-        argW = { type: '__translateDrawImage('+sA[0].type+')', object: sA[0], property: { type: 'Identifier', name:'width' }};
-        argH = { type: '__translateDrawImage('+sA[0].type+')', object: sA[0], property: { type: 'Identifier', name:'height' }};
+        // TODO: compiler error reporting
+        argW = { type: '__translateDrawImage('+sA[0].type+')', object: sA[0], property: { type: 'Identifier', name:'width' }}
+        argH = { type: '__translateDrawImage('+sA[0].type+')', object: sA[0], property: { type: 'Identifier', name:'height' }}
     }
 
   } else {
-    argW = AST.MemberExpression(sA[0], AST.Identifier('width'));
-    argH = AST.MemberExpression(sA[0], AST.Identifier('height'));
+    argW = AST.MemberExpression(sA[0], AST.Identifier('width'))
+    argH = AST.MemberExpression(sA[0], AST.Identifier('height'))
   }
 
   let targetArgs = [
@@ -54,12 +67,12 @@ module.exports = (context) => {
     sA[0],        // sprite
     argW, argH,   // width, height
     'WHITE'       // fill color, TODO: only for Arduboy (do target check)
-  ];
+  ]
 
   return ({
-    call: translate.game.target+'.drawBitmap',
+    call: '<target>.drawBitmap',
     args: targetArgs
-  });
+  })
 
-  // todo subframe slice version
-};
+  // TODO: subframe slice version
+}

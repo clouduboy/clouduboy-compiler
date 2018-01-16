@@ -2,6 +2,11 @@
 
 
 
+// Returns the simple string representation of the AST node
+// (basically "recreates" the item as it (might) have appeared
+// in the source - although this is not a faithful representation
+// to the original source (yet), e.g. parens stripped, etc.)
+// TODO: move this fully to ast.js
 function getString(exp) {
   if (typeof exp === 'string') return exp;
 

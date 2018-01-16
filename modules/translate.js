@@ -5,6 +5,8 @@ const getObject = require('./getObject.js');
 
 const lookup = require('./lookup.js');
 
+const { AST } = require('./ast.js');
+
 const translateLib = require('./translateLib.js')(translate);
 
 
@@ -12,6 +14,7 @@ const translateLib = require('./translateLib.js')(translate);
 function translate(exp, callexp) {
   if (typeof exp === 'string') return exp;
 
+  // TODO: consider using typeof exp != 'object'
   if (!exp || !exp.type ) return '?';
 
   let self = translate;
@@ -28,8 +31,8 @@ function translate(exp, callexp) {
 
     // Member expressions are usually translated to built-in methods
     case 'MemberExpression':
-      let obj = self(exp.object);
-      let deepObj = typeof exp.object === 'object' && 'object' in exp.object ? self(exp.object.object) : null;
+      const obj = self(exp.object);
+      const deepObj = AST.getMemberExpressionDeepObjectId();
 
       // Computed expression, could be array access
       if (exp.computed) {

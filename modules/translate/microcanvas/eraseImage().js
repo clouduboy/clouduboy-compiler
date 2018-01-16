@@ -1,8 +1,13 @@
-// translate.game.eraseImage(gfx,x,y);   >>>    arduboy.drawBitmap(x,y, gfx, GFX_WIDTH,GFX_HEIGHT, BLACK);
+// game.eraseImage(gfx, x, y);   >>>    <target>.drawBitmap(x ,y, gfx, GFX_WIDTH, GFX_HEIGHT, BLACK);
 
-// The `MicroCanvas.eraseImage(sprite, x, y)`
-// method is an alias for
-// `MicroCanvas.clearImage(sprite, x, y)`
-const alias = require(`./clearImage()`);
+/**
+@deprecated
+(`void`) Erases the pixels of an image from the screen
 
-module.exports = (context) => alias(context);
+This is an alias for `@clearImage()`, and its use is deprecated, the
+use of `@clearImage()` is preferred.
+*/
+
+const alias = require(`./clearImage()`)
+
+module.exports = (context) => alias(context)
