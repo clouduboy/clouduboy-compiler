@@ -50,6 +50,11 @@ function parse(game) {
         } else {
           let v = game.createVariable(dec.id.name, undefined, undefined, dec)
 
+          // Do size translation on the initializer if necessary
+          if (v.typeInfo && v.typeInfo.array === true) {
+            v.typeInfo.translatedSize = translate.arrs(v.typeInfo.size)
+          }
+
           game.globals.push(v)
 
           // Make global accessible via its name
@@ -64,7 +69,7 @@ function parse(game) {
         let v = game.createVariable(dec.id.name, undefined, undefined, dec)
 
         game.globals.push(v)
-        Object.defineProperty(game.globals, dec.id.name, { value: game.globals[game.globals.length-1] })        
+        Object.defineProperty(game.globals, dec.id.name, { value: game.globals[game.globals.length-1] })
       })
     }
   })

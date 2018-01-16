@@ -203,17 +203,22 @@ function translate(exp, callexp) {
   return '__translate("'+exp.type+'", "'+(exp.$raw||'')+'")';
 }
 
-function translateArgs(args) {
-  return '('
+
+// Translates all function call arguments (or optionally, array
+// initializer elements) and returns the result, enclosed in
+// the correct brackets.
+function translateArgs(args, array = false) {
+  return (array ? '[' : '(')
     +(args.length
       ? ' '+args.map(arg => translate(arg)).join(', ')+' '
       : ''
     )
-  +')';
+  +(array ? ']' : ')');
 
 }
 
 
 
 translate.args = translateArgs;
+translate.arrs = (args) => translateArgs(args, true);
 module.exports = translate;

@@ -57,31 +57,41 @@ function pCreateConstant(id, value, type) {
 function pCreateVariable(id, value, type, declaration) {
   const game = this
 
+  // Create a new variable
+  let newVar = {
+    id: id,
+    cid: utils.toSnakeCase(id),
+    value: value,
+    type: type
+  }
+
   // If no type specified, try to guess it
   // PS: constants shouldn't be affected by scope issues
   //if (!type) type = guessType(id, value, 'constant')
   // only explicit types here, do not guess here only on output
   if (!type) {
-    type = game.guessType(id, undefined, declaration)
+    newVar.type = game.guessType(id, undefined, declaration)
+
+    // Save more precise type info
+    if (typeof newVar.type === 'object') {
+      newVar.typeInfo = newVar.type
+      newVar.type = newVar.typeInfo.type+(newVar.array ? '[]' : '')
+    }
+
+    type = newVar.type
     console.log('- no type information, guessed: ', type)
   }
 
   // Value based on type
   if (!value && type) {
     if (declaration.init && declaration.init.type == 'ArrayExpression') {
-      value = declaration.init.elements.map(e => e.raw)
+      newVar.value = declaration.init.elements.map(e => e.raw)
     } else {
-      value = declaration.init ? declaration.init.value : void 0
+      newVar.value = declaration.init ? declaration.init.value : void 0
     }
 
+    value = newVar.value
     console.log('- no initial value supplied, detected: ', value)
-  }
-
-  let newVar = {
-    id: id,
-    cid: utils.toSnakeCase(id),
-    value: value,
-    type: type
   }
 
   // Find parent scope
@@ -125,6 +135,12 @@ function pGuessType(id, value, hint) {
       switch (hint.init.type) {
         case 'Literal':
           return 'int' // TODO: strings, floats, bytes & unsigneds
+
+        // myVar = new Array(size)
+        case 'NewExpression':
+          return { array: true, type: 'int', size: hint.init.arguments}
+
+        // var = [ ... ]
         case 'ArrayExpression':
           return 'byte[]'
       }
