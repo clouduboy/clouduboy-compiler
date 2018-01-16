@@ -33,7 +33,7 @@ declare class MicroCanvas {
 
   clearImage(sprite: MicroCanvasGFXObject, x: number, y: number): void;
   eraseImage(sprite: MicroCanvasGFXObject, x: number, y: number): void;
-  centerText(x: number, y: number, text: string): void;
+  centerText(text: string, x: number, y: number): void;
   clear(): void;
 
   buttonPressed(button: string): boolean;
