@@ -15,3 +15,6 @@ char _microcanvas_textbuffer[32];
 
 // global state machine
 unsigned int _microcanvas_state;
+
+// global current drawing color
+unsigned int _microcanvas_fill_color = WHITE;

@@ -16,6 +16,9 @@ char _microcanvas_textbuffer[32];
 // global state machine
 unsigned int _microcanvas_state;
 
+// global current drawing color
+_microcanvas_fill_color = WHITE;
+
 PROGMEM const unsigned char gfx_invader[] = {
   /*9x8x2*/ 0x70, 0x38, 0xea, 0x3c, 0x78, 0x3c, 0xea, 0x38, 0x70, 0x70, 0x38, 0x6a, 0xbc, 0x38, 0xbc, 0x6a, 0x38, 0x70 };
 PROGMEM const unsigned char gfx_defender[] = {
