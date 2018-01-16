@@ -23,6 +23,11 @@ function transformResult(r) {
     return '{\n' + Array.from(r).map( result => transformResult(result) ).join(';\n') + ';\n}'
   }
 
+  // Object returning a simple expression
+  if (typeof r === 'object' && 'expression' in r) {
+    return translate(r.expression)
+  }
+
   // Object returned describing a function/library call
   if (typeof r == 'object' && 'call' in r) {
     // '<target>' string in call properties are replaced with the actual game target
@@ -78,13 +83,17 @@ function translateLib(exp, callexp) {
   // as none of the library functions are simple identifiers.
   // This should be provided by/in translate.js, but since translateLib is
   // going away this won't be removed for now/until then.
-  if (exp.type == 'Identifier') {
+  // TODO: this handles all CallExpression-s in translate(), including the
+  // non-membership-expression ones (simple function invocations)
+  // These should be handled in translate at CallExpression
+  if (exp.type == 'Identifier' && callexp.type == 'CallExpression') {
     return transformResult({
       //call: lookup(exp), translate does the same for Identifiers so we can rid the lookup dependency
       call: translate(exp),
       args: callexp.arguments
     });
   }
+  // TODO: This is now potentially absolutely useless and unneeded
 
   // Automatic detection of transforms (load all modules) and leave it to the
   // transform modules themselves to figure it out whether or not they can transform
@@ -95,7 +104,7 @@ function translateLib(exp, callexp) {
   for (let tf of availableTransforms) {
     let tfr = require('./transforms/'+tf)(context)
 
-    if (tfr) return transformResult(tfr)
+    if (tfr !== undefined) return transformResult(tfr)
   }
   // TODO: In the future it might be worthwile to build a dispatcher that extracts this
   // info from the modules on load time and speeds up the process but this should

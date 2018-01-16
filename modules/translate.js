@@ -29,6 +29,11 @@ function translate(exp, callexp) {
     case 'Identifier': // TODO: we'll need to handle scope (path)
       return lookup(exp);
 
+    // Template literals
+    case 'TemplateLiteral':
+      // TODO: proper conversion of template literals with embedded expressions
+      return JSON.stringify(getString(exp));
+
     // Member expressions are usually translated to built-in methods
     case 'MemberExpression':
       const obj = self(exp.object);
@@ -122,6 +127,9 @@ function translate(exp, callexp) {
 
     // Function calls
     case 'CallExpression':
+      // TODO: this is the culprit for the need for Identifier checks in translateLib
+      // e.g. this can send anyFunctionCall(42) to translateLib (and it shouldn't),
+      // it should handle plain function calls' lookup in place
       return translateLib(exp.callee, exp);
 
     // Return statements
@@ -142,9 +150,10 @@ function translate(exp, callexp) {
       // Handle triple-equals
       if (op === '===') op = '==';
 
-      // Special handling for game.* objects
+      // Special handling required for some game.* objects
       if (exp.type == 'AssignmentExpression'
-       && getString(exp.left) == self.game.alias+'.playbackRate'
+        && exp.left.type == "MemberExpression"
+       //&& getString(exp.left) == self.game.alias+'.playbackRate'
       ) {
         return translateLib(exp.left, exp);
       }
