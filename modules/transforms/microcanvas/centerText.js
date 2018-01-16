@@ -28,7 +28,7 @@ module.exports = (context) => {
   pos.args[0] = AST.BinaryExpression(
     '-',
     pos.args[0], // x coordinate
-    JSON.stringify(AST.getString(text))+'.length() * 6 / 2'
+    `strlen(${JSON.stringify(AST.getString(text))}) * 6 / 2`
   )
 
   return r
