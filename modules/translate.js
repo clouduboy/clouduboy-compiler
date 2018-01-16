@@ -37,37 +37,12 @@ function translate(exp, callexp) {
     // Member expressions are usually translated to built-in methods
     case 'MemberExpression':
       const obj = self(exp.object);
-      //const deepObj = AST.getMemberExpressionDeepObjectId();
-
-      // Computed expression, could be array access
-      // TODO: this only caters for the initializer-type global array
-      // definitions, and needs to be folded into transforms/array
-      if (exp.computed) {
-        // Check in globals, TODO: find variable in-scope
-        let glob = self.game.globals[obj]
-
-        // Some kind of Array on the global scope -> render as element access
-        if (glob && glob.type.substr(-2) == '[]') {
-          return obj+'[' +self(exp.property)+ ']'
-        }
-      }
 
       // MicroCanvas calls
-      //if (obj === self.game.alias || obj.match(/^(g|s)fx/)){ // Game asset properties (gfx & sfx)
-      //  return translateLib(exp, callexp);
-      //
-      //} else if (deepObj && deepObj.match(/^(g|s)fx/)) { // Game asset properties (gfx & sfx)
-      //  return translateLib(exp, callexp);
-
       if (true) {
         return translateLib(exp, callexp);
       // Some other library
       } else {
-        // Simple property access
-        //if (exp.property.type === 'Identifier') {
-        //  return '? ' + (self(exp.object) + '.' + self(exp.property));
-        //} this shouldn't be needed now
-
         // Property expression
         return '(' + (self(exp.object) + ').' + self(exp.property));
         // TODO: property access belongs to subexpressions, move it there
