@@ -23,7 +23,7 @@ function lookup(exp) {
 
   // It's a built-in library global or constant
   // TODO: move this to a global and make it configurable (e.g. dependent on target)
-  if (id.match(/^(TRUE|FALSE|WIDTH|HEIGHT|WHITE|BLACK|INVERT)$/)) {
+  if (id.match(/^(TRUE|FALSE|WIDTH|HEIGHT|WHITE|BLACK|INVERT|_microcanvas_textbuffer)$/)) {
     return id;
   }
 

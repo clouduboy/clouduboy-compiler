@@ -177,8 +177,8 @@ arduboy.fillRect( WIDTH / 2 - 7, 0, 13, 9, BLACK );
 _microcanvas_fill_color = WHITE;
 {
 arduboy.setTextSize( 1 );
-sprintf(_microcanvas_textbuffer, "%u", game_timer_animation_remaining()/60);
 arduboy.setCursor( WIDTH / 2 - strlen(_microcanvas_textbuffer) * 6 / 2, 0 );
+sprintf( _microcanvas_textbuffer, "%u", (int)floor( game_timer_animation_remaining() / 60 ) );
 arduboy.print( _microcanvas_textbuffer );
 };
 
