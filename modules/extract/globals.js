@@ -46,10 +46,10 @@ function parse(game) {
           game.sfx[dec.id.name] = game.sfx[game.sfx.length-1]
 
         // MicroCanvas standard library hook
-        } else if (getString(dec.init) === 'new MicroCanvas') {
+        } else if (dec.init && dec.init.type === 'NewExpression' && dec.init.callee.name === 'MicroCanvas') {
           game.alias = dec.id.name
 
-          console.log("MicroCanvas uses the alias: ", game.alias)
+          game.log(`MicroCanvas uses the alias: "${game.alias}"`)
 
         } else {
           let v = game.createVariable(dec.id.name, undefined, undefined, dec)

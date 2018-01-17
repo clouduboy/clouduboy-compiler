@@ -35,7 +35,7 @@ function getString(exp) {
 
     case 'NewExpression':
     case 'CallExpression':
-      return `${exp.type === 'NewExpression' ? 'new ' :''}${self(exp.callee)}( … )`;
+      return `${exp.type === 'NewExpression' ? 'new ' :''}${self(exp.callee)}()`;
 
     case 'ExpressionStatement':
       return self(exp.expression);
