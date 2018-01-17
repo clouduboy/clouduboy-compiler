@@ -25,16 +25,17 @@ function getString(exp) {
       return (exp.quasis.map(q => q.value.raw).join())
 
     case 'MemberExpression':
-      // Simple property access
-      if (exp.property.type === 'Identifier') {
-        return (self(exp.object) + '.' + self(exp.property));
+      // Property expression
+      if (exp.computed) {
+        return (self(exp.object) + '[ ' + self(exp.property)) +' ]';
       }
 
-      // Property expression
-      return (self(exp.object) + '[ ' + self(exp.property)) +' ]';
+      // Simple property access
+      return (self(exp.object) + '.' + self(exp.property));
 
     case 'NewExpression':
-      return 'new '+self(exp.callee);
+    case 'CallExpression':
+      return `${exp.type === 'NewExpression' ? 'new ' :''}${self(exp.callee)}( … )`;
 
     case 'ExpressionStatement':
       return self(exp.expression);
