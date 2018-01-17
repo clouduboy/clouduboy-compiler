@@ -11,20 +11,24 @@ module.exports = { parse }
 function parse(game) {
   console.log('Processing globals')
 
-  // TODO: check for reserved globals, like "arduboy"
+  // TODO: check for reserved globals, like game.target
 
   // All variable declarations
-  let vars = game.ast.body
-  .filter(o => o.type === 'VariableDeclaration')
-  .forEach(function (n) {
+  let vars = game.ast.body.forEach(function (n) {
     if (n.kind === 'const') {
-      n.declarations.forEach(dec => {
+      n.declarations
+      // Skip function valued
+      .filter(decl => !decl.init || (decl.init.type !== 'FunctionExpression' && decl.init.type !== 'ArrowFunctionExpression'))
+      .forEach(dec => {
         // TODO: make sure the resulting expression is a constant expression?
         game.createConstant(getString(dec.id), translate(dec.init))
       })
 
     } else if (n.kind === 'let') {
-      n.declarations.forEach(dec => {
+      n.declarations
+      // Skip function valued
+      .filter(decl => !decl.init || (decl.init.type !== 'FunctionExpression' && decl.init.type !== 'ArrowFunctionExpression'))
+      .forEach(dec => {
         // Graphics asset
         if (dec.id.name.match(/^gfx/)) {
           game.gfx.push({
@@ -72,7 +76,10 @@ function parse(game) {
 
     // 'var' declarations are okay in globals since we hoist them *anyway*
     } else if (n.kind === 'var') {
-      n.declarations.forEach(dec => {
+      // Skip function valued declarations
+      n.declarations
+      .filter(decl => !decl.init || (decl.init.type !== 'FunctionExpression' && decl.init.type !== 'ArrowFunctionExpression'))
+      .forEach(dec => {
         let v = game.createVariable(dec.id.name, undefined, undefined, dec)
 
         game.globals.push(v)
@@ -82,9 +89,25 @@ function parse(game) {
   })
 
   // All global function declarations
-  game.ast.body
-  .filter(o => o.type === 'FunctionDeclaration')
-  .forEach(function (dec) {
+  let funcDecls = game.ast.body.filter(o => o.type === 'FunctionDeclaration')
+    // Plus all function-valued variable declarations
+    .concat(
+      // Take the body (top-level global-scope only)
+      game.ast.body
+        // Take all variable declarations
+        .filter(o => o.type === 'VariableDeclaration')
+        // Choose the ones containing function expressions or arrow functions
+        .map(v => v.declarations.filter(
+          decl => decl.init && (decl.init.type === 'FunctionExpression' || decl.init.type === 'ArrowFunctionExpression')
+        // These functions doesn't have their own name (id) so
+        // we take it from the declaration instead
+        ).map(decl => { decl.init.id = decl.id; return decl.init }))
+        // One variable declarator may contain several actual
+        // declarations, we collect those into a single, flat array
+        .reduce((a,b) => { return a.concat(b); }, [])
+    )
+
+  funcDecls.forEach(function (dec) {
     let id = getString(dec.id)
     let params = []
 
