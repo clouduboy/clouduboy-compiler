@@ -11,6 +11,7 @@ function Game(target, id) {
   Object.assign(this, {
     alias: 'game',
     target: target,
+    compileLog: [],
     id: id,
     constants: [], globals: [], gfx: [], sfx: [],
     setup: { code: [] },
@@ -27,6 +28,46 @@ Game.prototype = Object.assign(Object.create(Game), {
 
   export: generate
 })
+
+
+// Compile log generation
+Object.defineProperty(Game.prototype, '_caller_', {
+  get: function() {
+    // Fetch new stack trace
+    const stack = new Error().stack.split('\n')
+    // Fish out caller information from the generated stack trace
+    const caller = stack
+      // Skip logging functions & select first non-log trace
+      // TODO: this skips legit Game calls so we need to limit
+      // the regex to actual log calls
+      .filter(s => !s.match(/at Game\./))[1]
+      // Extract caller function name & file/line number info
+      .match(/at (\S+).*?clouduboy-compiler\/(.+)\)/).slice(1).join(' @ ')
+
+    return caller
+  }
+});
+
+// Generic log function
+function log(logLevel, message, additionalInfo) {
+  this.compileLog.push({
+    lvl: logLevel,
+    msg: message,
+    src: this._caller_,
+  })
+
+  // Add additional info only if specified
+  if (additionalInfo) this.compileLog[this.compileLog.length-1].nfo = additionalInfo;
+
+  // Return passed-in message
+  return message
+}
+
+// Specific log functions
+Game.prototype.log   = function(...args) { log.call(this, 'info', ...args) }
+Game.prototype.warn  = function(...args) { log.call(this, 'warn', ...args) }
+Game.prototype.error = function(...args) { log.call(this, 'error', ...args) }
+Game.prototype.debug = function(...args) { log.call(this, '', ...args) }
 
 module.exports = Game
 

@@ -53,7 +53,6 @@ module.exports = function(context) {
   // We are looking at all concerns' values and if not a single one that
   // applies then we are bailing early
   if (Object.values(concerns).reduce((a,b) => a||b) === false) return undefined
-  //console.log('FOUND SOME CONCERNS, YEAH!', AST.getString(exp), Object.entries(concerns).filter(v=>v[1]).map(v=>v[0]).join(','))
 
 
   // Make sure we have a list of available transforms
@@ -114,10 +113,7 @@ module.exports = function(context) {
         } else {
           // This may occur due to a typo or the user forgot to previously load
           // the graphics asset in game.setup()
-          // TODO: This is a compiler error condition, figure out a way to report it
-          // (e.g. push it to something like translate.game.compileErrors)
-          console.log('[!] Constant not found: ', id)
-          return `__translateMicroCanvas(${AST.getString(exp)})`
+          return translate.game.error(`/* [!] Constant "${id}" not found at: ${AST.getString(exp)} */`)
         }
     }
 

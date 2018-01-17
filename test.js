@@ -34,6 +34,8 @@ d = diff.diffTrimmedLines(a.replace(/\r\n/g,'\n').trim(),b.replace(/\r\n/,'\n').
 
 console.log('Compilation finished: ', testfile);
 fs.writeFileSync('data/.lasttest.ino', game.ino);
+fs.writeFileSync('data/.lasttest.log', JSON.stringify(game.compileLog, null, 2))
+
 
 if (process.argv.filter(arg => arg==='--json').length) {
   fs.writeFileSync('game.json', JSON.stringify(game));

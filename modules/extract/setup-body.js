@@ -87,6 +87,8 @@ function loadGfx(game, id, args) {
 
   // TODO: TypeError: Cannot set property 'meta' of undefined
   // occurs when gfx image wasn't declared on the global scope.
+  // TODO: Auto-fix by adding these to the JS header and updating
+  // the script automatically (+notify user of the fix)
   game.gfx[id].meta = px
   game.gfx[id].value = px.c()
 

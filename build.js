@@ -37,6 +37,7 @@ ${Object.keys(CFG.TARGETS).join(', ')}
     fs.writeFileSync('data/ast.json', JSON.stringify(game.ast, null, 2))
     fs.writeFileSync('data/game.json', JSON.stringify(game, null, 2))
     fs.writeFileSync('data/game.ino', game.ino||'')
+    fs.writeFileSync('data/compile-log.json', JSON.stringify(game.compileLog, null, 2))
   }
 }
 

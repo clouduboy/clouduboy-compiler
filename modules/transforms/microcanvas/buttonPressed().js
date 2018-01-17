@@ -25,9 +25,7 @@ module.exports = (context) => {
 
   // Make sure button actually exists
   if (!btn in utils.BUTTONS[translate.game.target]) {
-    // TODO: compiler error reporting
-    // return new Error('Unknown button reference: '+btn);
-    return `__translateButtonPressed(${AST.getString(exp)})`
+    return translate.game.error(`/* [!] Unknown button "${btn}" in: ${AST.getString(exp)} */`)
   }
 
   // simple 1:1 mapping

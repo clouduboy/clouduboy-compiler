@@ -52,9 +52,9 @@ module.exports = (context) => {
 
       // Unsupported
       default:
-        // TODO: compiler error reporting
-        argW = { type: '__translateDrawImage('+sA[0].type+')', object: sA[0], property: { type: 'Identifier', name:'width' }}
-        argH = { type: '__translateDrawImage('+sA[0].type+')', object: sA[0], property: { type: 'Identifier', name:'height' }}
+        let errorMessage = translate.game.error(`/* [!] Unsupported sprite object: ${AST.getString(sA[0])} */`)
+        argW = { type: errorMessage, object: sA[0], property: { type: 'Identifier', name:'width' }}
+        argH = { type: errorMessage, object: sA[0], property: { type: 'Identifier', name:'height' }}
     }
 
   } else {

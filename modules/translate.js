@@ -34,6 +34,11 @@ function translate(exp, callexp) {
       // TODO: proper conversion of template literals with embedded expressions
       return JSON.stringify(getString(exp));
 
+    // New expression - objects are not yes supported so this is inert
+    case 'ObjectExpression':
+    case 'NewExpression':
+      return self.game.error(`/* [!] Objects are currently not supported: ${exp.$raw||AST.getString(exp)} */`)
+
     // Member expressions are usually translated to built-in methods
     case 'MemberExpression':
       const obj = self(exp.object);
@@ -186,7 +191,8 @@ function translate(exp, callexp) {
       return '_microcanvas_yield('+getString(exp.argument)+')';
   }
 
-  return '__translate("'+exp.type+'", "'+(exp.$raw||'')+'")';
+  // Unrecognized
+  return translate.game.error(`/* [!] Unrecognized expression "${exp.type}" in: ${exp.$raw||AST.getString(exp)} */`)
 }
 
 

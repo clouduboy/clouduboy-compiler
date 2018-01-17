@@ -93,6 +93,19 @@ function translateLib(exp, callexp) {
     // <id>(...)
   };
 
+  // Ignore console methods
+  if (obj === 'console') {
+    translate.game.log(`Ignored console.* call: ${exp.$raw||AST.getString(exp)} */`)
+    return ''
+  }
+
+  // Date and RegExp objects are unsupported
+  if (obj === 'Date' || obj === 'RegExp') {
+    translate.game.error(`/* [!] ${obj} objects are not supported: ${AST.getString(exp)} */`)
+    return '';
+  }
+
+
   // If current expression is a simple identifier, than this is a simple function call.
   // Need to look up the the binding this identifier belongs to and translate it.
   // TODO: note that there is no reason this should be in "translateLib",
@@ -128,7 +141,7 @@ function translateLib(exp, callexp) {
   // translation process.
 
   // Unknown
-  return '__translateLib("'+(callexp&&callexp.$raw||AST.getString(exp))+'")';
+  return translate.game.error(`/* [!] Unsupported: ${AST.getString(exp)} */`)
 }
 
 
