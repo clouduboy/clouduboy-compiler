@@ -31,6 +31,8 @@ module.exports = function(context) {
       // A cast to int is required to use value in expressions like '%'
       // TODO: only use cast when it's needed or requested ( check the
       // surroundings of the expression)
+      // TODO: once we have better type information, the whole floor() call
+      // could be optimized away in compiled code (relying on integer divison)
       return { call: '(int)floor', args: callexp.arguments }
 
     // Math.abs( <number> )

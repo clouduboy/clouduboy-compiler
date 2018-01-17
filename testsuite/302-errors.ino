@@ -55,15 +55,31 @@ void loop() {
   if (_microcanvas_frame_counter==60000) _microcanvas_frame_counter = 0;
 
 ////// LOOP CONTENTS TO FOLLOW //////
-int loop_obj;
-int[] my_date;
+int loop_obj = /* [!] Objects are currently not supported: { foo: "bar" } */;
+int[] my_date = /* [!] Objects are currently not supported: new Date() */;
 int now;
-int[] loop_arr = 1,2,3;
-if (arduboy.pressed( ? )) undefined
-undefined;
-undefined = 42;
-arduboy.drawBitmap( ?, ?, return_sprite( 2 ), ?, ?, WHITE );
-arduboy.drawBitmap( 0, 0, gfx_sprite_2, , , WHITE );
+int[] loop_arr = /* [!] Unrecognized expression "ArrayExpression" in: [ 1, 2, 3 ] */;
+if (arduboy.pressed( ? )) /* [!] Unrecognized expression "EmptyStatement" in: ; */
+/* [!] Unsupported: game.notAValidMethod */;
+/* [!] Unsupported: game.notReallyAThing = 42 */;
+arduboy.drawBitmap( ?, ?, return_sprite( 2 ), /* [!] Unrecognized expression "/* [!] Unsupported sprite object: returnSprite( … ) */" in: "</* [!] Unsupported sprite object: returnSprite( … ) */>" */, /* [!] Unrecognized expression "/* [!] Unsupported sprite object: returnSprite( … ) */" in: "</* [!] Unsupported sprite object: returnSprite( … ) */>" */, WHITE );
+arduboy.drawBitmap( 0, 0, gfx_sprite_2, /* [!] Constant "gfxSprite2Width" not found at: gfxSprite2.width */, /* [!] Constant "gfxSprite2Height" not found at: gfxSprite2.height */, WHITE );
+{
+arduboy.setTextSize( 1 );
+arduboy.setCursor( WIDTH / 3, 10 );
+arduboy.print( "BOO!" );
+};
+{
+arduboy.setTextSize( 1 );
+arduboy.setCursor( 32, 42 );
+arduboy.print( "22" );
+};
+/* [!] Error: text drawing functions only support strings & template literals! Near: game.fillText(WIDTH/2,HEIGHT/2, 42) */;
+{
+arduboy.setTextSize( 1 );
+arduboy.setCursor( WIDTH / 2, HEIGHT / 2 );
+arduboy.print( "42" );
+};
 ////// END OF LOOP CONTENTS //////
 
   arduboy.display();

@@ -35,8 +35,11 @@ module.exports = (context) => {
   // Handle both parameter orders (text, x,y) & (x,y, text)
   let text, x,y;
 
-  // TODO: check for string literals as well
-  if (sA[2].type === 'TemplateLiteral') {
+  // Check for legacy parameter order
+  if (sA[2].type === 'TemplateLiteral' // 3rd parameter is a template literal..
+    || sA[2].type === 'Literal' && typeof sA[2].value == 'string' // ..or string literal
+  ) {
+    translate.game.warn(`[*] Deprecated: the legacy fillText(x,y,text) parameter order is deprecated — please use (text,x,y) instead. Near: ${callexp.$raw||AST.getString(callexp)}`)
     text = sA[2]
     x = sA[0]
     y = sA[1]
@@ -47,6 +50,17 @@ module.exports = (context) => {
   }
 
   // TODO: proper string/concat/cast/etc expression handling
+  // No String/Template literal passed as text parameter, expressions
+  // are currently not supported
+
+  if (text.type !== 'TemplateLiteral' && text.type !== 'Literal') {
+    return translate.game.error(`/* [!] Error: text drawing functions only support strings & template literals! Near: ${callexp.$raw||AST.getString(callexp)} */`)
+  }
+  // Check for non-string literals as text parameter
+  if (text.type === 'Literal' && typeof text.value != 'string') {
+    translate.game.log(`Provided "${typeof text.value}" literal automatically converted to string in: ${callexp.$raw||AST.getString(callexp)}`)
+    text.value = String(text.value)
+  }
 
   // Check if our print message has any embedded expressions,
   // and evaluate them/print them into a string and then onto
@@ -61,6 +75,7 @@ module.exports = (context) => {
       { call: 'sprintf',
         args: [
           text,
+          // TODO: %u means unsigned, handle signed values (%d/%i)
           AST.Literal(tl.quasis[0].value.raw +'%u'+ tl.quasis[1].value.raw),
           ...tl.expressions
         ]

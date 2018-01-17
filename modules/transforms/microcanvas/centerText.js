@@ -21,6 +21,9 @@ module.exports = (context) => {
   // Generate initial transform via fillText()
   const r = alias(context)
 
+  // Propagate fillText errors
+  if (typeof r != 'object') return r;
+
   const text = r.filter(exp => exp.call === '<target>.print').pop().args[0]
   const pos =  r.filter(exp => exp.call === '<target>.setCursor').pop()
 

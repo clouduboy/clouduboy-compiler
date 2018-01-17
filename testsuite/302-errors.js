@@ -40,6 +40,17 @@ game.loop(function() {
 
   // Forgot to load sprite in setup()
   game.drawImage(gfxSprite2, 0,0);
+
+
+  // Old deprecated parameter order (warning)
+  game.fillText(WIDTH/3, 10, "BOO!");
+
+  // Although ambiguous this will work, prints 22 and a notice about an automatic conversion to string a literal
+  game.fillText(22, 32, 42)
+  // This is actually an error, as 3rd param (legacy) is not a string or template literal (falls back to first param, which is an expression, so throws an error)
+  game.fillText(WIDTH/2,HEIGHT/2, 42)
+  // This on the other hand will work as intended (with a notice)
+  game.fillText(42, WIDTH/2,HEIGHT/2)
 });
 
 function returnSprite(spriteNumber) {
