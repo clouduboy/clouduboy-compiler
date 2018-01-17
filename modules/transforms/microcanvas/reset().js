@@ -1,6 +1,7 @@
-// game.reset();   >>>   <target>.reset();
+// game.reset();   >>>   <target>.setup();
 
 /**
+@experimental
 (`void`) Re-initializes the game.
 
 Resets the game (practically, re-initializes any global state, like
