@@ -64,10 +64,10 @@ function log(logLevel, message, additionalInfo) {
 }
 
 // Specific log functions
-Game.prototype.log   = function(...args) { log.call(this, 'info', ...args) }
-Game.prototype.warn  = function(...args) { log.call(this, 'warn', ...args) }
-Game.prototype.error = function(...args) { log.call(this, 'error', ...args) }
-Game.prototype.debug = function(...args) { log.call(this, '', ...args) }
+Game.prototype.log   = function(...args) { return log.call(this, 'info', ...args) }
+Game.prototype.warn  = function(...args) { return log.call(this, 'warn', ...args) }
+Game.prototype.error = function(...args) { return log.call(this, 'error', ...args) }
+Game.prototype.debug = function(...args) { return log.call(this, '', ...args) }
 
 module.exports = Game
 
