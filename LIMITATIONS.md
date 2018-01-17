@@ -23,6 +23,7 @@ Please also note: **nothing** is inherently impossible to do, there are only two
 - `error` String concatenation/manipulation is currently unsupported. Please use template literals  (`${foo} something {bar}`).
 - `warn` Long text does not wrap, and there is a limitation of 32 characters for the template literal + expression buffer (template  literals that contain no expressions compile to string literals and, thus, unaffected by this)
 - Fonts are not currently supported (there is one built-in font that all text functions use) but making it possible to use a custom ASCII bitmap font in your game is being considered/explored, mainly because of textual and text-heavy games and because the current default font has a lots of compromises. You can always include your own limited fonts as sprites, though, keeping in mind that images take a lot of program memory in general.
+- `warn` Please note that the legacy `{fill|center}Text(x,y,text)` parameter order is deprecated — please use ``…text,x,y)` instead.
 
 `game.*` a.k.a. the Canvas:
 - Most of the Canvas-to-C-support is mapped incrementally, on demand - if your favorite function/feature is missing file an issue on GitHub with a usecase - or even better, send a pull request :)
@@ -37,6 +38,8 @@ Graphics and sprites:
 - Sprites are provided by the PIF (Pixeldata Image Format) library, and have a bunch of limitations.
 - `warn` No color support right now - but support being heavily explored with the Tiny Arcade as a flagship device (and the Gamebuino Meta that's coming soon).
 - `error` Currently we need to know in compile time which image asset a `drawImage` call will be operating on (because we need to know the width/height for drawing). This means dynamically specifying the sprite (like returning it from a function) is not supported and results in a compiler error. Some level of dynamism can be achieved via ternaries and multi-frame sprites, or you could just use a good-ole-fashioned `if`/`switch` block.
+- `game.frameCount` is incremented at the very begining of every every `loop()` iteration.
+- Plese take care! `game.frameCount` compiles to an **`unsigned`** `int`. Any operations/calculations must take this into account — `game.frameCount - (game.frameCount+1) > 0` will be obviously true in JavaScript (`=-1`), but once compiled this will **explicitly not be true** (`=65535`, or similar, as the unsigned rolls over)!
 
 `Ternaries`:
 
