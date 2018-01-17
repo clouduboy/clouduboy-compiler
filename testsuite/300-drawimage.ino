@@ -16,6 +16,11 @@ char _microcanvas_textbuffer[32];
 // global state machine
 unsigned int _microcanvas_state;
 
+// global current drawing color
+unsigned int _microcanvas_fill_color = WHITE;
+
+#define LENGTHOF(x)  (sizeof(x) / sizeof(x[0]))
+
 PROGMEM const unsigned char gfx_sprite_a[] = {
   /*1x1*/ 0x01 };
 PROGMEM const unsigned char gfx_sprite_b[] = {
@@ -68,3 +73,4 @@ arduboy.drawBitmap( 0, 0, (variable / 60 % 2 ? gfx_sprite_a : gfx_sprite_multi +
 
   arduboy.display();
 }
+
