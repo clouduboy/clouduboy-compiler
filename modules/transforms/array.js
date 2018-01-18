@@ -51,26 +51,48 @@ module.exports = function(context) {
 
 
   // Array item access
-  if (exp.type === 'MemberExpression' && exp.computed && obj in translate.game.globals) {
-    // If this is an assignment expression
+  if (exp.type === 'MemberExpression' && exp.computed) {
+    // Lookup result
+    const lres = translate.lookup(exp.object, true)
 
-    // Fetch global variable descriptor
-    const glob = translate.game.globals[obj];
+    // Defined on the global scope
+    // (Note: although technically assets, like gfx* are "variables defined
+    // on the global scope", they have a different type when looked up)
+    if (lres.type === 'GlobalVariable') {
+      // Fetch global variable descriptor
+      const glob = lres.descriptor
 
-    // TODO: array initializer syntax on global declarations currently
-    // doesn't generate a typeInfo property
-    if (glob.typeInfo && glob.typeInfo.array) {
-      return { array: obj, item: exp.property }
-    } else return `__arrayAccess("${AST.getString(exp)}")`
+      // TODO: array initializer syntax on global declarations currently
+      // doesn't generate a typeInfo property
+      if (glob.typeInfo && glob.typeInfo.array) {
+        return { array: lres.translated, item: exp.property }
+      } else return translate.game.error(`Variable "${AST.log(exp)}" defined on the global scope is not an Array.`)
+
+    // Local array (e.g. passed in as a function parameter)
+    // TODO: when we transitively track type information for passed
+    // function parameters, these two branches could be merged together
+    } else if (lres.type === 'ScopedVariable') {
+      // TODO: array-ness check (currently no transitive type info)
+
+      // Translate as array access
+      return { array: lres.translated, item: exp.property }
+    }
   }
 
   // Assignment to array item
-  if (exp.type === 'AssignmentExpression' && exp.left.type === 'MemberExpression') {
+  if (exp.type === 'AssignmentExpression'
+   && exp.left.type === 'MemberExpression'
+   && exp.left.computed
+  ) {
     // It is indeed an array item value assignment, but we will handle it
     // when we come we return to the MemberExpression (because otherwise
     // we would need to take care of the right-hand-side, too - but usually
     // we don't care about that with Arrays)
-    if (exp.left.computed && AST.getString(exp.left.object) in translate.game.globals) {
+    const deepObj = AST.getString(exp.left.object)
+    const lres = translate.lookup(exp.left.object, true)
+
+    // TODO: array-ness checks
+    if (lres.type === 'ScopedVariable' || lres.type === 'GlobalVariable') {
       return { noop: true }
     }
   }
