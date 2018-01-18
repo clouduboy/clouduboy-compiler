@@ -124,7 +124,7 @@ function pCreateVariable(id, value, type, declaration) {
     }
 
     type = newVar.type
-    console.log('- no type information, guessed: ', type)
+    game.debug(`Auto-detecting type of variable "${id}": ${type}`)
   }
 
   // Value based on type

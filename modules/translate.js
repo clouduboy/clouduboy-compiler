@@ -263,4 +263,5 @@ function translateArgs(args, array = false) {
 
 translate.args = translateArgs;
 translate.arrs = (args) => translateArgs(args, true);
+translate.lookup = lookup
 module.exports = translate;
