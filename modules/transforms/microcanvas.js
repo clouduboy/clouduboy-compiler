@@ -113,7 +113,7 @@ module.exports = function(context) {
         } else {
           // This may occur due to a typo or the user forgot to previously load
           // the graphics asset in game.setup()
-          return translate.game.error(`/* [!] Constant "${id}" not found at: ${AST.getString(exp)} */`)
+          return translate.game.error(`[!] Unable to resolve ${AST.log(exp)} — "${id}" not found`)
         }
     }
 

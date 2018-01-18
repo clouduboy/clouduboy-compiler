@@ -13,9 +13,12 @@ let translate;
 // that needs to be further processed to generate output C++ source.
 // TODO: put this onto "translate"
 function transformResult(r) {
-  // String returned, use as-is
-  if (typeof r == 'string') {
-    return r;
+  // Strings are returned as-is
+  if (typeof r == 'string'
+    // Error messages will be turned into comments
+   || typeof r === 'object' && r instanceof Error
+  ) {
+    return r
   }
 
   // Transform was a no-op
@@ -49,6 +52,9 @@ function transformResult(r) {
   if (typeof r == 'object' && 'array' in r) {
     return r.array + translate.arrs([ r.item ])
   }
+
+  // Unknown
+  if (r) return translate(translate.game.debug(`Unknown transform result: "${JSON.stringify(r)}"`))
 }
 
 // Generate mappings for available transforms
@@ -95,13 +101,13 @@ function translateLib(exp, callexp) {
 
   // Ignore console methods
   if (obj === 'console') {
-    translate.game.log(`Ignored console.* call: ${exp.$raw||AST.getString(exp)} */`)
+    translate.game.log(`Ignored console.* call: ${AST.log(exp)} */`)
     return ''
   }
 
   // Date and RegExp objects are unsupported
   if (obj === 'Date' || obj === 'RegExp') {
-    translate.game.error(`/* [!] ${obj} objects are not supported: ${AST.getString(exp)} */`)
+    translate.game.error(`[!] ${obj} objects are not supported: ${AST.log(exp)}`)
     return '';
   }
 
@@ -141,7 +147,7 @@ function translateLib(exp, callexp) {
   // translation process.
 
   // Unknown
-  return translate.game.error(`/* [!] Unsupported: ${AST.getString(exp)} */`)
+  return translate(translate.game.error(`[!] Unsupported: ${AST.log(exp)}`))
 }
 
 

@@ -39,7 +39,7 @@ module.exports = (context) => {
   if (sA[2].type === 'TemplateLiteral' // 3rd parameter is a template literal..
     || sA[2].type === 'Literal' && typeof sA[2].value == 'string' // ..or string literal
   ) {
-    translate.game.warn(`[*] Deprecated: the legacy fillText(x,y,text) parameter order is deprecated — please use (text,x,y) instead. Near: ${callexp.$raw||AST.getString(callexp)}`)
+    translate.game.warn(`[*] Deprecation Notice: the legacy fillText(x,y,text) parameter order is deprecated, please use (text,x,y) instead: ${AST.log(callexp)}`)
     text = sA[2]
     x = sA[0]
     y = sA[1]
@@ -54,11 +54,11 @@ module.exports = (context) => {
   // are currently not supported
 
   if (text.type !== 'TemplateLiteral' && text.type !== 'Literal') {
-    return translate.game.error(`/* [!] Error: text drawing functions only support strings & template literals! Near: ${callexp.$raw||AST.getString(callexp)} */`)
+    return translate.game.error(`[!] Unfortunately text drawing functions only support strings & template literals: ${AST.log(callexp)}`)
   }
   // Check for non-string literals as text parameter
   if (text.type === 'Literal' && typeof text.value != 'string') {
-    translate.game.log(`Provided "${typeof text.value}" literal automatically converted to string in: ${callexp.$raw||AST.getString(callexp)}`)
+    translate.game.log(`Provided "${typeof text.value}" literal automatically converted to string: ${AST.log(callexp)}`)
     text.value = String(text.value)
   }
 

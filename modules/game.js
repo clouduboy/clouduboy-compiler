@@ -60,7 +60,11 @@ function log(logLevel, message, additionalInfo) {
   if (additionalInfo) this.compileLog[this.compileLog.length-1].nfo = additionalInfo;
 
   // Return passed-in message
-  return message
+  // Note that the message may not necessarily be an error itself,
+  // we use the Error object here to distinguish between log messages
+  // and target device source code, so we can comment out these messages
+  // in translate()
+  return new Error(message)
 }
 
 // Specific log functions

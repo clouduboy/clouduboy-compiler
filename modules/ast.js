@@ -22,9 +22,13 @@ AST.Literal = function(value) {
 }
 
 AST.MemberExpression = function(object, property) {
+  // Try to guess the line from passed-in nodes
+  const line = object.line || property.line
+
   return {
     type: 'MemberExpression',
-    object, property
+    object, property,
+    line
   }
 }
 
@@ -96,6 +100,34 @@ AST.findAncestor = function(node, filterFunction) {
 }
 
 
+//
+AST.log = function(node) {
+  //
+  const pos = AST.lineNumber(node)
+
+  let ret = (node.$raw || AST.getString(node))
+          + (pos.line || pos.col ? ' @ game.js' : '')
+          + (pos.line ? `:${pos.line}`   : '')
+          + (pos.col  ? `:${pos.col}`    : '')
+          + (pos.len  ? ` (+${pos.len})` : '')
+
+  return ret
+}
+
+// TODO: optimize / cache line starts/line numbers
+AST.lineNumber = function(node) {
+  return ({
+    // For some nodes this might not be supplied
+    line: node.line,
+    // For some nodes (e.g. ones generated on-the-fly) we might not have
+    // precise info on where the node starts/ends but we might still know
+    // which line it belongs to
+    col: node.start >= 0 ? node.start-node.lineStart : undefined,
+    len: node.start >=0 && node.end >=0 ? node.end-node.start+1 : undefined
+  })
+}
+
+
 // Original (source) string representation of the AST node
 AST.getString = require('./getString')
 
@@ -137,9 +169,16 @@ function addParent(ast, n, parent) {
     Object.defineProperty(n, '$parent', { value: parent })
   }
 
-  // Raw content
+  // Raw content & line numbers
   if ('start' in n && 'end' in n) {
     Object.defineProperty(n, '$raw', { value: ast.$source.substring(n.start,n.end) })
+
+    const src = ast.$source.substring(0, n.start-1),
+          line = src.split('\n').length, // TODO: optimize?
+          lineStart = src.lastIndexOf('\n')
+
+    n.line = line
+    n.lineStart = lineStart
   }
 
   // Walk subtree

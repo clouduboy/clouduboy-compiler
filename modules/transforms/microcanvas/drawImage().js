@@ -54,7 +54,7 @@ module.exports = (context) => {
 
       // Unsupported
       default:
-        return translate.game.error(`/* [!] Unsupported sprite object: ${AST.getString(sA[0])} */`)
+        return translate.game.error(`[!] Unable to interpret graphics object: ${AST.log(sA[0])}`)
     }
 
   } else {

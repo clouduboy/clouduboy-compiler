@@ -12,17 +12,30 @@ const translateLib = require('./translateLib.js')(translate);
 
 
 function translate(exp, callexp) {
+  // Let's just use translate like we do everywhere else
+  let self = translate;
+
+  // Simple strings are used as-is (treated as target source code)
   if (typeof exp === 'string') return exp;
 
-  // TODO: consider using typeof exp != 'object'
-  if (!exp || !exp.type ) return '?';
+  // Error messages are turned into comments
+  // TODO: consider removing line numbers
+  if (typeof exp === 'object' && exp instanceof Error) {
+    return `/* ${exp.message} */`
+  }
 
-  let self = translate;
+  // TODO: consider using typeof exp != 'object'
+  if (!exp || !exp.type ) {
+    // Unrecognized
+    return self(translate.game.error(`[!] Unrecognized: invalid node or transform result: ${exp ? AST.log(exp) : typeof exp}`))
+  }
 
   switch (exp.type) {
 
     // Literals return the textual definiton of the literal
     case 'Literal':
+      // exp.raw might contain single-quoted strings and other weirdness
+      // so stringifying the actual, typed value is safer here
       return JSON.stringify(exp.value);
 
     // Look up identifiers
@@ -37,7 +50,7 @@ function translate(exp, callexp) {
     // New expression - objects are not yes supported so this is inert
     case 'ObjectExpression':
     case 'NewExpression':
-      return self.game.error(`/* [!] Objects are currently not supported: ${exp.$raw||AST.getString(exp)} */`)
+      return self(self.game.error(`[!] Objects are currently not supported: ${AST.log(exp)}`))
 
     // Member expressions are usually translated to built-in methods
     case 'MemberExpression':
@@ -45,7 +58,7 @@ function translate(exp, callexp) {
 
       // MicroCanvas calls
       if (true) {
-        return translateLib(exp, callexp);
+        return self(translateLib(exp, callexp));
       // Some other library
       } else {
         // Property expression
@@ -134,7 +147,7 @@ function translate(exp, callexp) {
       // TODO: this is the culprit for the need for Identifier checks in translateLib
       // e.g. this can send anyFunctionCall(42) to translateLib (and it shouldn't),
       // it should handle plain function calls' lookup in place
-      return translateLib(exp.callee, exp);
+      return self(translateLib(exp.callee, exp));
 
     // Return statements
     case 'ReturnStatement':
@@ -149,7 +162,7 @@ function translate(exp, callexp) {
           && e.expression.callee.object.name === self.game.alias
           && e.expression.callee.property.name === 'loop'
       )) {
-        self.game.debug(`Found early return in loop(), prepended .display() call. Near: ${exp.$raw||AST.getString(exp)}`);
+        self.game.debug(`Found early return in loop(), prepended .display() call: ${AST.log(exp)}`);
         prefix = self.game.target+'.display(); ';
       }
       return prefix +'return' + (exp.argument ? ' '+self(exp.argument) : '') + ';';
@@ -175,7 +188,10 @@ function translate(exp, callexp) {
         const r = translateLib(exp);
 
         // Only finish early if we have received a transform result
-        if (r !== undefined) return r;
+        if (r !== undefined) {
+          // Make sure we handle Error objects
+          return self(r);
+        }
       }
 
       let parens = false;
@@ -226,7 +242,7 @@ function translate(exp, callexp) {
   }
 
   // Unrecognized
-  return translate.game.error(`/* [!] Unrecognized expression "${exp.type}" in: ${exp.$raw||AST.getString(exp)} */`)
+  return self(translate.game.error(`[!] Unrecognized: "${exp.type}" node at: ${AST.log(exp)}`))
 }
 
 

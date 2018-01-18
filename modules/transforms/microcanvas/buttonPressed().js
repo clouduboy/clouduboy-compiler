@@ -24,8 +24,8 @@ module.exports = (context) => {
   const btn = AST.getString(callexp.arguments[0]);
 
   // Make sure button actually exists
-  if (!btn in utils.BUTTONS[translate.game.target]) {
-    return translate.game.error(`/* [!] Unknown button "${btn}" in: ${AST.getString(exp)} */`)
+  if (btn in utils.BUTTONS[translate.game.target] === false) {
+    return translate.game.error(`[!] Unknown button "${btn}" in: ${AST.log(callexp)}`)
   }
 
   // simple 1:1 mapping

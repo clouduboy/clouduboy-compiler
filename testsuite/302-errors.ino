@@ -54,16 +54,16 @@ void loop() {
   if (_microcanvas_frame_counter==60000) _microcanvas_frame_counter = 0;
 
 ////// LOOP CONTENTS TO FOLLOW //////
-int loop_obj = /* [!] Objects are currently not supported: { foo: "bar" } */;
-int[] my_date = /* [!] Objects are currently not supported: new Date() */;
+int loop_obj = /* [!] Objects are currently not supported: { foo: "bar" } @ game.js:18:17 (+15) */;
+int[] my_date = /* [!] Objects are currently not supported: new Date() @ game.js:21:16 (+11) */;
 int now;
-int[] loop_arr = /* [!] Unrecognized expression "ArrayExpression" in: [ 1, 2, 3 ] */;
+int[] loop_arr = /* [!] Unrecognized: "ArrayExpression" node at: [ 1, 2, 3 ] @ game.js:27:17 (+12) */;
 if (false) { arduboy.display(); return; }
-if (arduboy.pressed( ? )) ;
-/* [!] Unsupported: game.notAValidMethod */;
-/* [!] Unsupported: game.notReallyAThing = 42 */;
-arduboy.drawBitmap( ?, ?, return_sprite( 2 ), /* [!] Unrecognized expression "/* [!] Unsupported sprite object: returnSprite() */" in: "</* [!] Unsupported sprite object: returnSprite() */>" */, /* [!] Unrecognized expression "/* [!] Unsupported sprite object: returnSprite() */" in: "</* [!] Unsupported sprite object: returnSprite() */>" */, WHITE );
-arduboy.drawBitmap( 0, 0, gfx_sprite_2, /* [!] Constant "gfxSprite2Width" not found at: gfxSprite2.width */, /* [!] Constant "gfxSprite2Height" not found at: gfxSprite2.height */, WHITE );
+if (/* [!] Unknown button "NoSuchButton!" in: game.buttonPressed('NoSuchButton!') @ game.js:33:7 (+36) */) ;
+/* [!] Unsupported: game.notAValidMethod @ game.js:36:3 (+21) */;
+/* [!] Unsupported: game.notReallyAThing = 42 @ game.js:39:3 (+26) */;
+/* [!] Unable to interpret graphics object: returnSprite(2) @ game.js:42:18 (+16) */;
+arduboy.drawBitmap( 0, 0, gfx_sprite_2, /* [!] Unable to resolve gfxSprite2.width @ game.js:45 — "gfxSprite2Width" not found */, /* [!] Unable to resolve gfxSprite2.height @ game.js:45 — "gfxSprite2Height" not found */, WHITE );
 {
 arduboy.setTextSize( 1 );
 arduboy.setCursor( WIDTH / 3, 10 );
@@ -74,7 +74,7 @@ arduboy.setTextSize( 1 );
 arduboy.setCursor( 32, 42 );
 arduboy.print( "22" );
 };
-/* [!] Error: text drawing functions only support strings & template literals! Near: game.fillText(WIDTH/2,HEIGHT/2, 42) */;
+/* [!] Unfortunately text drawing functions only support strings & template literals: game.fillText(WIDTH/2,HEIGHT/2, 42) @ game.js:54:3 (+36) */;
 {
 arduboy.setTextSize( 1 );
 arduboy.setCursor( WIDTH / 2, HEIGHT / 2 );
