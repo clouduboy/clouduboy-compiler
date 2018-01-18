@@ -103,14 +103,16 @@ function translate(exp, callexp) {
       // means "if exp.* exists, call translate on it, otherwise set
       // the branch to the empty string"
       let con = exp.consequent && self(exp.consequent) || '',
-          alt = exp.alternate && self(exp.alternate) || ''
+          alt = exp.alternate && self(exp.alternate) || '',
+          elseif = (exp.alternate && exp.alternate.type === "IfStatement")
 
       // Detect multi-expression with no block surrounding it & add curlies
       // The slice gets rid of any trailing semicolons
       if (con.slice(0,-1).indexOf(';') !== -1 && con[0] !== '{') {
         con = '{ '+con+' }';
       }
-      if (alt.slice(0,-1).indexOf(';') !== -1 && alt[0] !== '{') {
+      // Leave 'else if'-s alone
+      if (!elseif && alt.slice(0,-1).indexOf(';') !== -1 && alt[0] !== '{') {
         alt = '{ '+alt+' }';
       }
       // TODO: re-use this for other statements (for, while..)
