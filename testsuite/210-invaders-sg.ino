@@ -297,8 +297,7 @@ if (intro) {
   intro = false;
   game_timer_animation_start = _microcanvas_frame_counter;
 }
-  arduboy.display();
-  return;
+  arduboy.display(); return;
 }
 if (rocket_y < 3) {
   if (total_invaders > 0 && arduboy.pressed( A_BUTTON )) {

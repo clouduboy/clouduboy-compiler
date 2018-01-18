@@ -118,7 +118,21 @@ function translate(exp, callexp) {
 
     // Return statements
     case 'ReturnStatement':
-      return 'return' + (exp.argument ? ' '+self(exp.argument) : '') + ';';
+      let prefix = '';
+
+      // Are we inside game.loop()? If so, prepend
+      let epath
+      if (epath = AST.findAncestor(exp,
+        e => e.type === 'ExpressionStatement'
+          && e.expression.type === 'CallExpression'
+          && e.expression.callee.type === 'MemberExpression'
+          && e.expression.callee.object.name === self.game.alias
+          && e.expression.callee.property.name === 'loop'
+      )) {
+        self.game.debug(`Found early return in loop(), prepended .display() call. Near: ${exp.$raw||AST.getString(exp)}`);
+        prefix = self.game.target+'.display(); ';
+      }
+      return prefix +'return' + (exp.argument ? ' '+self(exp.argument) : '') + ';';
 
     // Break statement
     case 'BreakStatement':

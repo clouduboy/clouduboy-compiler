@@ -73,6 +73,29 @@ AST.getMemberExpressionDeepObjectId = function(exp) {
 }
 
 
+// Occasionally we need to find (or find out) an ancestor among the list of
+// element parent
+AST.findAncestor = function(node, filterFunction) {
+  // Path to the node (if found)
+  const path = []
+
+  // Walk ancestor tree
+  let p
+  while (p = node.$parent) {
+    path.push(p)
+
+    // Try to find a match with the requested element
+    if (filterFunction(p)) return path
+
+    // Check parent's parent
+    node = p
+  }
+
+  // No ancestor node was found that satisfied the filterFunction
+  return false;
+}
+
+
 // Original (source) string representation of the AST node
 AST.getString = require('./getString')
 
