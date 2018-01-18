@@ -257,14 +257,14 @@ function defeat() {
   game.drawImage(gfxInvader[game.frameCount/15&1], game.width/2-gfxInvader.width/2, game.height/2-gfxInvader.height*2);
 
   game.fillStyle = "white";
-  game.centerText(game.width/2, game.height/2, " OH NO!");
+  game.centerText(" OH NO!", game.width/2, game.height/2);
 
   // Wait 3s then show a message to restart
   // TODO: game.after('3s', _ => { ... }) or similar
   if (defeat_after === 0) defeat_after = game.frameCount;
   if (defeat_after>0 && game.frameCount-defeat_after>3*game.frameRate) {
     game.fillStyle = "white";
-    game.centerText(game.width/2, game.height/4*3, "press [A] to retry");
+    game.centerText("press [A] to retry", game.width/2, game.height/4*3);
 
     if (game.buttonPressed('space')) {
       defeat_after = 0;
@@ -282,7 +282,7 @@ function victory() {
   }
 
   game.fillStyle = "white";
-  game.centerText(game.width/2, game.height/2, " HUMANITY PREVAILS!");
+  game.centerText(" HUMANITY PREVAILS!", game.width/2, game.height/2);
   // same as: game.drawText(game.width/2 -game.measureText(`…`).width/2, game.height/2 -game.measureText(`…`).height/2, `…`);
   // game.measureText(`Humanity prevails!`).width ~> `…`.length*5
 
@@ -296,7 +296,7 @@ function victory() {
 	    game.drawImage(gfxInvader[2], game.width/2-55, fall);
     } else {
       game.fillStyle = "white";
-      game.centerText(game.width/2, game.height/4*3, "[A] to play again");
+      game.centerText("[A] to play again", game.width/2, game.height/4*3);
 
       if (game.buttonPressed('space')) {
         victory_after = 0;
@@ -390,7 +390,7 @@ function playgame() {
 
   // Game timer
   game.fillStyle = "white";
-  game.centerText(game.width/2, 0, `${Math.floor((game_timer_animation_remaining()/60))}`);
+  game.centerText(`${Math.floor((game_timer_animation_remaining()/60))}`, game.width/2, 0);
 }
 
 
