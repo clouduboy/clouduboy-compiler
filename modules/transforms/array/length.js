@@ -7,11 +7,11 @@
 */
 
 module.exports = (context) => {
-  const {translate, obj} = context
+  const {translate, exp} = context
 
   // simple mapping to a global function
   return ({
     call: 'LENGTHOF',
-    args: [ obj ]
+    args: [ exp.object ]
   })
 }
