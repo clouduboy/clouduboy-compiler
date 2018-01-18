@@ -13,10 +13,11 @@ const { AST } = require('../../ast')
 
 
 module.exports = (context) => {
-  const {translate, obj, callexp} = context
+  const {translate, exp, callexp} = context
 
-  // TODO: proper expansion using an AST
-  let varName = translate(obj)
+  // Lookup/translate the object of the call (array name)
+  let varName = translate(exp.object)
+
   return `for (unsigned int _a_fill_idx_ = 0; _a_fill_idx_ < LENGTHOF( ${varName} ); ++_a_fill_idx_) ${varName}[_a_fill_idx_] = ${translate(callexp.arguments[0])}`
   // TODO: memset works too, but only for byte arrays, because memset converts
   // the passed-in value to an (unsigned) byte and fills up all bytes of the
