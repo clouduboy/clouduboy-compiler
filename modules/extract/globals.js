@@ -64,6 +64,11 @@ function parse(game) {
             } else if (typeof v.typeInfo.elements === 'number') {
               v.typeInfo.translatedSize = `${v.typeInfo.elements}*LENGTHOF(${v.cid})`
             }
+
+          // There is an initializer but no value was detected, we are going to
+          // create the initializer via translate()
+          } else if (dec.init && !v.value) {
+            v.value = translate(dec.init)
           }
 
           game.globals.push(v)
