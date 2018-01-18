@@ -39,7 +39,6 @@ game.loop(function() {
   game.notReallyAThing = 42;
 
   // Unsupported drawImage parameters
-  // TODO: wow this outputs some ~really~ funky recursive log messages
   game.drawImage(returnSprite(2));
 
   // Forgot to load sprite in setup()

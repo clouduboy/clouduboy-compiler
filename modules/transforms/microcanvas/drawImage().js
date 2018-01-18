@@ -26,6 +26,8 @@ module.exports = (context) => {
     switch (sA[0].type) {
       // drawImage( gfxFoo, ... )
       case 'Identifier':
+        // TODO: refactor with transformResult (needs new "MemberExpression"
+        // object handler/format)
         argW = AST.MemberExpression(sA[0], AST.Identifier('width'))
         argH = AST.MemberExpression(sA[0], AST.Identifier('height'))
         break
@@ -52,9 +54,7 @@ module.exports = (context) => {
 
       // Unsupported
       default:
-        let errorMessage = translate.game.error(`/* [!] Unsupported sprite object: ${AST.getString(sA[0])} */`)
-        argW = { type: errorMessage, object: sA[0], property: { type: 'Identifier', name:'width' }}
-        argH = { type: errorMessage, object: sA[0], property: { type: 'Identifier', name:'height' }}
+        return translate.game.error(`/* [!] Unsupported sprite object: ${AST.getString(sA[0])} */`)
     }
 
   } else {
