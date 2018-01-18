@@ -28,7 +28,6 @@ PROGMEM const unsigned char gfx_sprite_2[] = {
 
 
 
-int game[];
 int arr_1[] = { 1, 2, 3, 4, 5 };
 int arr_2[ 10 ];
 
@@ -59,10 +58,11 @@ int loop_obj = /* [!] Objects are currently not supported: { foo: "bar" } */;
 int[] my_date = /* [!] Objects are currently not supported: new Date() */;
 int now;
 int[] loop_arr = /* [!] Unrecognized expression "ArrayExpression" in: [ 1, 2, 3 ] */;
-if (arduboy.pressed( ? )) /* [!] Unrecognized expression "EmptyStatement" in: ; */
+if (false) { arduboy.display(); return; }
+if (arduboy.pressed( ? )) ;
 /* [!] Unsupported: game.notAValidMethod */;
 /* [!] Unsupported: game.notReallyAThing = 42 */;
-arduboy.drawBitmap( ?, ?, return_sprite( 2 ), /* [!] Unrecognized expression "/* [!] Unsupported sprite object: returnSprite( … ) */" in: "</* [!] Unsupported sprite object: returnSprite( … ) */>" */, /* [!] Unrecognized expression "/* [!] Unsupported sprite object: returnSprite( … ) */" in: "</* [!] Unsupported sprite object: returnSprite( … ) */>" */, WHITE );
+arduboy.drawBitmap( ?, ?, return_sprite( 2 ), /* [!] Unrecognized expression "/* [!] Unsupported sprite object: returnSprite() */" in: "</* [!] Unsupported sprite object: returnSprite() */>" */, /* [!] Unrecognized expression "/* [!] Unsupported sprite object: returnSprite() */" in: "</* [!] Unsupported sprite object: returnSprite() */>" */, WHITE );
 arduboy.drawBitmap( 0, 0, gfx_sprite_2, /* [!] Constant "gfxSprite2Width" not found at: gfxSprite2.width */, /* [!] Constant "gfxSprite2Height" not found at: gfxSprite2.height */, WHITE );
 {
 arduboy.setTextSize( 1 );

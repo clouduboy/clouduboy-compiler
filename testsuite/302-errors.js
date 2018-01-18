@@ -26,7 +26,10 @@ game.loop(function() {
   // Arrays can only be defined on the global scope
   let loopArr = [ 1, 2, 3 ];
 
-  // Non-existent button reference
+  // An early return in loop() needs target.display() to show screen contents
+  if (false) return;
+
+  // Non-existent button reference, also Empty Expression
   if (game.buttonPressed('NoSuchButton!')) ;
 
   // No such MicroCanvas method
@@ -36,6 +39,7 @@ game.loop(function() {
   game.notReallyAThing = 42;
 
   // Unsupported drawImage parameters
+  // TODO: wow this outputs some ~really~ funky recursive log messages
   game.drawImage(returnSprite(2));
 
   // Forgot to load sprite in setup()

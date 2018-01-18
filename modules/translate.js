@@ -73,6 +73,10 @@ function translate(exp, callexp) {
         + ';'
       );
 
+    // Empty statement (semicolon without any statement for it to end)
+    case 'EmptyStatement':
+      return ';'
+
     // Just unwrap expression body
     case 'ExpressionStatement':
       return self(exp.expression) +';';
@@ -95,11 +99,25 @@ function translate(exp, callexp) {
 
     // If statements are all the same
     case 'IfStatement':
+      // the && takes higher precedence than the || so this basically
+      // means "if exp.* exists, call translate on it, otherwise set
+      // the branch to the empty string"
+      let con = exp.consequent && self(exp.consequent) || '',
+          alt = exp.alternate && self(exp.alternate) || ''
+
+      // Detect multi-expression with no block surrounding it & add curlies
+      // The slice gets rid of any trailing semicolons
+      if (con.slice(0,-1).indexOf(';') !== -1 && con[0] !== '{') {
+        con = '{ '+con+' }';
+      }
+      if (alt.slice(0,-1).indexOf(';') !== -1 && alt[0] !== '{') {
+        alt = '{ '+alt+' }';
+      }
+      // TODO: re-use this for other statements (for, while..)
+
       return 'if ('+self(exp.test)+') '
-        +( exp.consequent
-           ? self(exp.consequent) + ( exp.alternate ? ' else ' + self(exp.alternate) : '')
-           : ''
-        );
+        + con
+        + ( alt ? ' else ' + alt : '');
 
     // Similarly, conditionals too
     case 'ConditionalExpression':
