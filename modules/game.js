@@ -3,6 +3,7 @@
 const platforms = require('../target-platforms/platforms')
 
 const utils = require('./utils')
+const AST = require('./ast').AST
 
 
 
@@ -25,6 +26,7 @@ Game.prototype = Object.assign(Object.create(Game), {
   createVariable: pCreateVariable,
 
   guessType: pGuessType,
+  flowType: pFlowType,
 
   export: generate
 })
@@ -167,6 +169,40 @@ function pCreateVariable(id, value, type, declaration) {
   return newVar
 }
 
+function pFlowType(node) {
+  const game = this
+
+  let flowParam = AST.nodeAt(AST.getPath(node), game.flow.ast)
+
+  if (!flowParam) console.log(game.log(`Flow typed node cannot be found for: ${AST.log(node)}`).toString())
+
+  return flowParam && detectFlowType(flowParam)
+}
+
+function detectFlowType(node) {
+  let tA = node, t = {}
+
+  if (node.typeAnnotation) {
+    tA = tA.typeAnnotation.typeAnnotation ? tA.typeAnnotation.typeAnnotation : tA.typeAnnotation
+  }
+
+  if (tA.type === 'TupleTypeAnnotation') {
+    t.array = true
+
+    if (tA.types[0]) {
+      const elementType = detectFlowType(tA.types[0])
+      if (elementType.flowType) {
+        t.flowType = elementType.flowType
+      }
+    }
+  }
+
+  if (tA.type === 'NumberTypeAnnotation') {
+    t.flowType = 'number'
+  }
+
+  return t
+}
 function pGuessType(id, value, hint) {
   const game = this
 

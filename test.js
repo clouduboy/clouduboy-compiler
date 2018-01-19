@@ -19,7 +19,9 @@ let testfile = process.argv[2] || '';
 
 let source = fs.readFileSync( path.join(__dirname, 'testsuite', testfile+'.js' ) ).toString();
 
-let game = microCanvasBuild('arduboy', source, testfile+'.js');
+
+
+microCanvasBuild('arduboy', source, testfile+'.js').then(game => {
 
 try {
   a = fs.readFileSync( path.join(__dirname, 'testsuite', testfile+'.ino' ) ).toString();
@@ -81,6 +83,8 @@ d.forEach(c => {
   } else {
     lc += c.count;
   }
+});
+
 });
 
 function lpad(str, n, padstr) {

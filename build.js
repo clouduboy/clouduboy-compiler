@@ -15,7 +15,6 @@ CFG.TARGETS = require('./target-platforms/platforms')
 
 let srcFile = process.argv[2] || 'data/game.js'
 let targetSystem = process.argv[3] || 'arduboy'
-console.log(process.argv.length)
 
 
 
@@ -31,13 +30,20 @@ ${Object.keys(CFG.TARGETS).join(', ')}
 `)
 
   } else {
-    let game = build(targetSystem, fs.readFileSync(srcFile), require('path').basename(srcFile))
+    build(targetSystem, fs.readFileSync(srcFile), require('path').basename(srcFile)).then(
+      (game) => {
+        // Save
+        fs.writeFileSync('data/ast.json', JSON.stringify(game.ast, null, 2))
+        fs.writeFileSync('data/game.json', JSON.stringify(game, null, 2))
+        fs.writeFileSync('data/game.ino', game.ino||'')
+        fs.writeFileSync('data/compile-log.json', JSON.stringify(game.compileLog, null, 2))
+        // flow
+        fs.writeFileSync('data/game.flow.js', game.flow.source||'')
+        fs.writeFileSync('data/game.flow-ast.json', JSON.stringify(game.flow.ast, null, 2))
 
-    // Save
-    fs.writeFileSync('data/ast.json', JSON.stringify(game.ast, null, 2))
-    fs.writeFileSync('data/game.json', JSON.stringify(game, null, 2))
-    fs.writeFileSync('data/game.ino', game.ino||'')
-    fs.writeFileSync('data/compile-log.json', JSON.stringify(game.compileLog, null, 2))
+      }
+    )
+
   }
 }
 
@@ -56,14 +62,22 @@ function build(target, source, id) {
   game.source = source.toString()
   game.ast = require('./modules/ast').from(game.source)
 
-  // Process AST and extract relevant components
-  const parsers = [ 'globals', 'main', 'setup-body', 'loop-body', 'function-bodies' ]
+  // Re-parse as Flow AST (async)
+  const astGen = require('./modules/flow/flow').AST(game).then(
+    flow => game.flow = flow
+  );
 
-  parsers.forEach(parseModule => require('./modules/extract/'+parseModule).parse(game))
 
+  // Once all async tasks have finished, start translating
+  return Promise.all([ astGen ]).then(_ => {
+    // Process AST and extract relevant components
+    const parsers = [ 'globals', 'main', 'setup-body', 'loop-body', 'function-bodies' ]
 
-  // Build
-  game.ino = game.export(target)
+    parsers.forEach(parseModule => require('./modules/extract/'+parseModule).parse(game))
 
-  return game
+    // Build
+    game.ino = game.export(target)
+  })
+  .then( _ => game )
+  .catch( e => process.exit(console.error(e) || 1))
 }
