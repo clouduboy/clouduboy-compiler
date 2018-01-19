@@ -9,7 +9,7 @@ if [ -e $1 ]; then
   # to the input JS file and runs it through Flow suggest to
   # explicitly include all inferred types.
   #cat modules/flow/microcanvas.d.js $1 > game.flow.js
-  echo '/* @flow */' | cat - $1 > data/game.flow.js
+  printf "/* @flow */" | cat - $1 > data/game.flow.js
 
 
   # Checks the file for Flow errors and saves them into
@@ -20,6 +20,9 @@ if [ -e $1 ]; then
   # It patches the original file with these inferred type
   # suggestions and saves it as game.flow.js
   npx flow suggest data/game.flow.js | patch data/game.flow.js
+
+  # Generate and store the AST too
+  npx flow ast data/game.flow.js --pretty > data/game.flow-ast.json
 fi
 
 # Copies the game.ino compile output file to clouduboy-platforms
