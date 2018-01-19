@@ -86,26 +86,26 @@ int cursor_pos_y = 0;
 int field_px_size = field_size * sprite_size;
 int display_width = 128;
 int display_height = 64;
-int field_start_x = display_width - field_px_size - 1;
-int field_start_y = display_height - field_px_size - 1;
+int field_start_x = (display_width - field_px_size) - 1;
+int field_start_y = (display_height - field_px_size) - 1;
 
-void generate(int* board, int* info_arr) {
+void generate(int* arr, int* info_arr) {
 ////// FUNCTION BODY //////
-for (unsigned int _a_fill_idx_ = 0; _a_fill_idx_ < LENGTHOF( board ); ++_a_fill_idx_) board[_a_fill_idx_] = 0;
+for (unsigned int _a_fill_idx_ = 0; _a_fill_idx_ < LENGTHOF( arr ); ++_a_fill_idx_) arr[_a_fill_idx_] = 0;
 int block = 0;
 int block_num = 3;
 for (int i = 0; i < field_size; i++) {
-  board[i] = random(0, 2);
-  if (board[i] == 1) {
+  arr[ i ] = random( 0, 2 );
+  if (arr[ i ] == 1) {
   block = block + 1;
 } else if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
   block_num = block_num - 1;
   block = 0;
 }
 }
 if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
 }
 
 }
@@ -117,70 +117,70 @@ int block_num = 3;
 if (board_0[ x ] == 1) {
   block = block + 1;
 } else if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
   block_num = block_num - 1;
   block = 0;
 }
 if (board_1[ x ] == 1) {
   block = block + 1;
 } else if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
   block_num = block_num - 1;
   block = 0;
 }
 if (board_2[ x ] == 1) {
   block = block + 1;
 } else if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
   block_num = block_num - 1;
   block = 0;
 }
 if (board_3[ x ] == 1) {
   block = block + 1;
 } else if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
   block_num = block_num - 1;
   block = 0;
 }
 if (board_4[ x ] == 1) {
   block = block + 1;
 } else if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
   block_num = block_num - 1;
   block = 0;
 }
 if (board_5[ x ] == 1) {
   block = block + 1;
 } else if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
   block_num = block_num - 1;
   block = 0;
 }
 if (board_6[ x ] == 1) {
   block = block + 1;
 } else if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
   block_num = block_num - 1;
   block = 0;
 }
 if (board_7[ x ] == 1) {
   block = block + 1;
 } else if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
   block_num = block_num - 1;
   block = 0;
 }
 if (block > 0) {
-  info_arr[block_num] = block;
+  info_arr[ block_num ] = block;
 }
 
 }
 void mark(int* arr, int x) {
 ////// FUNCTION BODY //////
-if (arr[x] == 0) {
-  arr[x] = 1;
+if (arr[ x ] == 0) {
+  arr[ x ] = 1;
 } else {
-  arr[x] = 0;
+  arr[ x ] = 0;
 }
 
 }
@@ -208,7 +208,7 @@ if (y == 0) {
 int check_row(int* board, int* current) {
 ////// FUNCTION BODY //////
 for (int i = 0; i < field_size; i++) {
-  if (board[i] != current[i]) {
+  if (board[ i ] != current[ i ]) {
   return 0;
 }
 }
@@ -262,12 +262,12 @@ time_start = _microcanvas_frame_counter;
 void draw_row(int y, int* arr, int* info_arr) {
 ////// FUNCTION BODY //////
 for (int x = 0; x < field_size; x++) {
-  int type = arr[x];
+  int type = arr[ x ];
   if (x == cursor_pos_x && y == cursor_pos_y) {
   type = type + 2;
 }
   for (int i = 0; i < 4; i++) {
-  arduboy.drawBitmap( (field_start_x - 5) - i * sprite_size, field_start_y + y * sprite_size, gfx_numbers + GFX_NUMBERS_FRAMESIZE*(info_arr[i]), GFX_NUMBERS_WIDTH, GFX_NUMBERS_HEIGHT, WHITE );
+  arduboy.drawBitmap( (field_start_x - 5) - i * sprite_size, field_start_y + y * sprite_size, gfx_numbers + GFX_NUMBERS_FRAMESIZE*(info_arr[ i ]), GFX_NUMBERS_WIDTH, GFX_NUMBERS_HEIGHT, WHITE );
 }
   arduboy.drawBitmap( field_start_x + x * sprite_size, field_start_y + y * sprite_size, gfx_field + GFX_FIELD_FRAMESIZE*(type), GFX_FIELD_WIDTH, GFX_FIELD_HEIGHT, WHITE );
 }
@@ -317,14 +317,18 @@ if (!resetting && arduboy.everyXFrames( 3 )) {
   cursor_pos_y = max( cursor_pos_y - 1, 0 );
   pressed = true;
   if (arduboy.pressed( B_BUTTON )) {
-  //current_0 = board_0;
-  //current_1 = board_1;
-  //current_2 = board_2;
-  //current_3 = board_3;
-  //current_4 = board_4;
-  //current_5 = board_5;
-  //current_6 = board_6;
-  //current_7 = board_7;
+  int i = 0;
+  while (i < LENGTHOF( current_0 )) {
+  current_0[ i ] = board_0[ i ];
+  current_1[ i ] = board_1[ i ];
+  current_2[ i ] = board_2[ i ];
+  current_3[ i ] = board_3[ i ];
+  current_4[ i ] = board_4[ i ];
+  current_5[ i ] = board_5[ i ];
+  current_6[ i ] = board_6[ i ];
+  current_7[ i ] = board_7[ i ];
+  ++i;
+}
 }
 }
 } else if (arduboy.pressed( A_BUTTON )) {
@@ -335,7 +339,7 @@ if (!resetting && arduboy.everyXFrames( 3 )) {
 }
   if (arduboy.pressed( B_BUTTON )) {
   resetting = true;
-  time_start = _microcanvas_frame_counter;
+  ;
   start_game();
 }
 }
@@ -378,3 +382,4 @@ arduboy.fillRect( field_start_x, field_start_y + field_px_size, field_start_x + 
 
   arduboy.display();
 }
+

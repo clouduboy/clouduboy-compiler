@@ -5,12 +5,12 @@ let game = new MicroCanvas();
 let fieldSize = 8;
 let spriteSize = 5;
 
-let generate = function (infoArr) {
-  let arr = [0, 0, 0, 0, 0, 0, 0, 0];
+let generate = function (arr, infoArr) {
+  arr.fill(0);
   let block = 0;
   let blockNum = 3;
   for (let i = 0; i < fieldSize; i++) {
-    arr[i] = game.random(0, 1);
+    arr[i] = game.random(0, 2);
     if (arr[i] == 1) {
       block = block + 1;
     }
@@ -23,11 +23,10 @@ let generate = function (infoArr) {
   if(block > 0) {
   	infoArr[blockNum] = block;
   }
-  return arr;
 };
 
-let calcColumn = function (x) {
-  let infoArr = [11, 11, 11, 11];
+let calcColumn = function (infoArr, x) {
+  infoArr.fill(11);
   let block = 0;
   let blockNum = 3;
   if (board0[x] == 1) {
@@ -97,7 +96,6 @@ let calcColumn = function (x) {
   if (block > 0) {
   	infoArr[blockNum] = block;
   }
-  return infoArr;
 }
 
 let mark = function (arr, x) {
@@ -193,41 +191,41 @@ let checkBoard = function () {
 }
 
 let startGame = function () {
-  rowInfo0 = [11, 11, 11, 11];
-  rowInfo1 = [11, 11, 11, 11];
-  rowInfo2 = [11, 11, 11, 11];
-  rowInfo3 = [11, 11, 11, 11];
-  rowInfo4 = [11, 11, 11, 11];
-  rowInfo5 = [11, 11, 11, 11];
-  rowInfo6 = [11, 11, 11, 11];
-  rowInfo7 = [11, 11, 11, 11];
-  current0 = [0, 0, 0, 0, 0, 0, 0, 0];
-  current1 = [0, 0, 0, 0, 0, 0, 0, 0];
-  current2 = [0, 0, 0, 0, 0, 0, 0, 0];
-  current3 = [0, 0, 0, 0, 0, 0, 0, 0];
-  current4 = [0, 0, 0, 0, 0, 0, 0, 0];
-  current5 = [0, 0, 0, 0, 0, 0, 0, 0];
-  current6 = [0, 0, 0, 0, 0, 0, 0, 0];
-  current7 = [0, 0, 0, 0, 0, 0, 0, 0];
-  board0 = generate(rowInfo0);
-  board1 = generate(rowInfo1);
-  board2 = generate(rowInfo2);
-  board3 = generate(rowInfo3);
-  board4 = generate(rowInfo4);
-  board5 = generate(rowInfo5);
-  board6 = generate(rowInfo6);
-  board7 = generate(rowInfo7);
-  columnInfo0 = calcColumn(0);
-  columnInfo1 = calcColumn(1);
-  columnInfo2 = calcColumn(2);
-  columnInfo3 = calcColumn(3);
-  columnInfo4 = calcColumn(4);
-  columnInfo5 = calcColumn(5);
-  columnInfo6 = calcColumn(6);
-  columnInfo7 = calcColumn(7);
+  rowInfo0.fill(11);
+  rowInfo1.fill(11);
+  rowInfo2.fill(11);
+  rowInfo3.fill(11);
+  rowInfo4.fill(11);
+  rowInfo5.fill(11);
+  rowInfo6.fill(11);
+  rowInfo7.fill(11);
+  current0.fill(0);
+  current1.fill(0);
+  current2.fill(0);
+  current3.fill(0);
+  current4.fill(0);
+  current5.fill(0);
+  current6.fill(0);
+  current7.fill(0);
+  generate(board0, rowInfo0);
+  generate(board1, rowInfo1);
+  generate(board2, rowInfo2);
+  generate(board3, rowInfo3);
+  generate(board4, rowInfo4);
+  generate(board5, rowInfo5);
+  generate(board6, rowInfo6);
+  generate(board7, rowInfo7);
+  calcColumn(columnInfo0, 0);
+  calcColumn(columnInfo1, 1);
+  calcColumn(columnInfo2, 2);
+  calcColumn(columnInfo3, 3);
+  calcColumn(columnInfo4, 4);
+  calcColumn(columnInfo5, 5);
+  calcColumn(columnInfo6, 6);
+  calcColumn(columnInfo7, 7);
   gameActive = true;
   resetting = false;
-  timeStart = new Date();
+  timeStart = game.frameCount;
 }
 
 game.setup(function() {
@@ -385,14 +383,18 @@ game.loop(function() {
         cursorPosY = Math.max(cursorPosY - 1, 0);
         pressed = true;
         if (game.buttonPressed('enter')) {
-          current0 = board0;
-          current1 = board1;
-          current2 = board2;
-          current3 = board3;
-          current4 = board4;
-          current5 = board5;
-          current6 = board6;
-          current7 = board7;
+          let i = 0;
+          while (i<current0.length) {
+            current0[i] = board0[i];
+            current1[i] = board1[i];
+            current2[i] = board2[i];
+            current3[i] = board3[i];
+            current4[i] = board4[i];
+            current5[i] = board5[i];
+            current6[i] = board6[i];
+            current7[i] = board7[i];
+            ++i;
+          }
         }
       }
     }
@@ -415,11 +417,11 @@ game.loop(function() {
   }
 
   if (gameActive) {
-    timeNow = new Date();
+    timeNow = game.frameCount;
   }
-  let timeDiff = Math.floor((timeNow.getTime() - timeStart.getTime()) / 1000);
-  let timeDiffM = Math.floor(timeDiff / 60);
-  let timeDiffS = timeDiff - (timeDiffM * 60);
+  let timeDiff = timeNow - timeStart;
+  let timeDiffM = Math.floor(timeDiff / 60 / 60);
+  let timeDiffS = Math.floor(timeDiff / 60 ) % 60;
 
   game.drawImage(gfxNumbers[Math.floor(timeDiffM / 10)], 0, 0);
   game.drawImage(gfxNumbers[timeDiffM - (Math.floor(timeDiffM / 10) * 10)], 4, 0);

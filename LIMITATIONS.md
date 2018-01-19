@@ -48,12 +48,13 @@ Graphics and sprites:
 `Array`-s:
 
 * `error` Arrays can only be created on the global scope.
-* `error` Array literals can only be used on the global scope.
-* `error` Passing arrays as function parameters are currently not supported
+* `error` Array literals can only be used on the global scope in the initializer.
+* `error` The Array initializer (yes, on the global scope), needs to inform the compiler about the size of the array, as currently all these arrays are static, pre-allocated arrays that cannot be resized.
+* `error` Passing arrays as function parameters are supported (experimental!), but with plenty of caveats. The biggest is probably: due to JavaScript's dynamic nature, the compiler needs to learn about which properties are used for passing in arrays, so you will have to have a call somewhere in the code that does just that. As we said, it's fragile. But it works.
 * `error` Functions returning arrays are not supported.
 * `error` Arrays of sprites are currently unsupported. Please consider using name prefixes or multiframe sprites instead.
 * `error` Currently only arrays of numbers (signed integers) are supported. Support for byte arrays using TypedArrays is planned.
-* `error` Arrays of arrays (multi-dimensional arrays) are currently not supported (but are being considered--please file an issue on the GitHub repo with a usecase!).
+* `error` Arrays of arrays (multi-dimensional arrays) are currently not supported (but are being considered--please file an issue on the GitHub repo with a usecase!). That said, accessing a frame of a sprite using a frame number stored in an array (e.g. `gfxFoo[myArray[3]]`) is __valid syntax__ and works as intended.
 
 `Object`-s:
 
