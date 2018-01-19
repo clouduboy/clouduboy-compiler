@@ -8,7 +8,7 @@ module.exports = { parse }
 function parse(game) {
   game.globals.forEach(dec => {
     if (dec.type === 'function') {
-      console.log('Translating function declaration "'+dec.cid+'()"');
+      console.log('Processing function '+dec.cid+'()');
       let f = { fobj: dec, code: [] };
 
       let funcbody = dec.value // FunctionDeclaration; TODO: FunctionExpression

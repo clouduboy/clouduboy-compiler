@@ -77,6 +77,7 @@ function translate(exp, callexp) {
       let id = getString(exp.id),
           initializer = exp.init ? self(exp.init) : undefined;
 
+      // TODO: flow type detection
       let v = self.game.createVariable(id, initializer, undefined, exp);
 
       return (

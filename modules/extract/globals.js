@@ -113,24 +113,30 @@ function parse(game) {
     )
 
   funcDecls.forEach(function (dec) {
-    let id = getString(dec.id)
-    let params = []
+    const id = getString(dec.id),
+          params = []
 
-    console.log('+ new', dec.generator ? 'generator' : 'function', dec.id.name, dec.params.map(p => getString(p)))
+    // TODO: Return type detection
 
     game.globals.push({
-      id: id,
+      id,
       cid: utils.toSnakeCase(id),
-      params: params,
+      params,
       value: dec,
       type: dec.generator ? 'generator' : 'function'
     })
+
+    // Alternate mapping via id
     game.globals[id] = game.globals[game.globals.length-1]
 
-    // parse function arguments to create local variables
-    dec.params.forEach(p => {
-      params.push(game.createVariable(getString(p), undefined, undefined, dec))
-    })
+    // Parse function arguments to create local variables
+    game.globals[id].params.push(...dec.params.map(p => {
+      // Type detection via Flow
+      let tA = game.flowType(p)
+      return game.createVariable(getString(p), undefined, tA, dec)
+    }))
+
+    console.log(`+ ${dec.generator ? 'generator' : 'function'} ${id}( ${params.map(p => p.type+' '+p.id).join(', ')})`)
 
   })
 }

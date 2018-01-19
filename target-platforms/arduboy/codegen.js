@@ -54,12 +54,9 @@ module.exports = function(game) {
     game.globals.filter(dec => dec.type!=='function'&&dec.type!=='generator').forEach(c => {
       // Array initializer
       if (c.typeInfo ) {
-        if (c.typeInfo.elements) {
-          b += c.typeInfo.baseType +' '+ c.cid +'[]'
-        } else {
-          b += c.typeInfo.baseType +' '+ c.cid + c.typeInfo.translatedSize
+        if (c.typeInfo.array) {
+          b += c.typeInfo.baseType +' '+ c.cid + (c.typeInfo.size ? c.typeInfo.translatedSize : '[]')
         }
-
 
       } else {
         b += (c.type ? c.type : game.guessType(c.id, c.value)) +' ';
@@ -104,7 +101,10 @@ module.exports = function(game) {
       b += '(';
       if (f.fobj.params) {
         b += f.fobj.params.map(param => {
-          return (param.type ? param.type : game.guessType(param.id, param.value)) + ' ' +param.cid;
+          // Array types
+          const pType = param.typeInfo && param.typeInfo.array ? param.typeInfo.baseType+'*' : (param.type ? param.type : game.guessType(param.id, param.value))
+
+          return pType + ' ' +param.cid;
         }).join(', ');
       }
       b += ')';

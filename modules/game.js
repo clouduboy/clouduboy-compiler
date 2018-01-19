@@ -112,6 +112,18 @@ function pCreateVariable(id, value, type, declaration) {
     type: type
   }
 
+  // Inferred type hints available
+  if (type && typeof type === 'object') {
+    // Store type info
+    const tI = newVar.typeInfo = type
+
+    // Guess target type
+    if (!tI.type && tI.flowType === 'number') tI.baseType = 'int'
+
+    // Fill in legacy type info
+    newVar.type = tI.baseType+(tI.array ? '[]' : '')
+  }
+
   // If no type specified, try to guess it
   // PS: constants shouldn't be affected by scope issues
   //if (!type) type = guessType(id, value, 'constant')
@@ -122,14 +134,15 @@ function pCreateVariable(id, value, type, declaration) {
     // Save more precise type info
     if (typeof newVar.type === 'object') {
       newVar.typeInfo = newVar.type
-      newVar.type = newVar.typeInfo.type+(newVar.array ? '[]' : '')
+      newVar.type = newVar.typeInfo.baseType+(newVar.typeInfo.array ? '[]' : '')
     }
 
     type = newVar.type
-    game.debug(`Auto-detecting type of variable "${id}": ${type}`)
+    game.debug(`Guessed variable type for "${id}": ${type}`)
   }
 
   // Value based on type
+  // TODO: review
   if (!value && type) {
     if (declaration.init && declaration.init.type == 'ArrayExpression') {
       newVar.value = declaration.init.elements.map(e => e.raw)
@@ -138,7 +151,6 @@ function pCreateVariable(id, value, type, declaration) {
     }
 
     value = newVar.value
-    console.log('- no initial value supplied, detected: ', value)
   }
 
   // Find parent scope
@@ -160,11 +172,12 @@ function pCreateVariable(id, value, type, declaration) {
 
   Object.defineProperty(newVar, '$scope', { value: scope })
 
-  console.log('+ new var: %s', scope.$variables[id].cid + ( value ? ' = '+value : ''))
-  console.log('  scope: ' + scopes
-    .map(x => (x.type ? x.type : (x instanceof Array ? '[]' : typeof x)) + (x.body ? '('+(scope===x?'*':'S')+')':'') )
-    .join(' > ') + ' "'+id+'"'
-  )
+  console.log('+ (%s) %s', newVar.type, scope.$variables[id].cid + ( value ? ' = '+ (value.join?'['+value.join(',')+']':value) : ''))
+  // TODO: proper type detection
+  //console.log('  scope: ' + scopes
+  //  .map(x => (x.type ? x.type : (x instanceof Array ? '[]' : typeof x)) + (x.body ? '('+(scope===x?'*':'S')+')':'') )
+  //  .join(' > ') + ' "'+id+'"'
+  //)
 
   return newVar
 }
@@ -203,6 +216,8 @@ function detectFlowType(node) {
 
   return t
 }
+
+// TODO: deprecate
 function pGuessType(id, value, hint) {
   const game = this
 
@@ -219,11 +234,11 @@ function pGuessType(id, value, hint) {
 
         // myVar = new Array(size)
         case 'NewExpression':
-          return { array: true, type: 'int[]', baseType: 'int', size: hint.init.arguments }
+          return { array: true, baseType: 'int', size: hint.init.arguments }
 
         // var = [ ... ]
         case 'ArrayExpression':
-          return { array: true, type: 'int[]', baseType: 'int', elements: hint.init.elements.length }
+          return { array: true, baseType: 'int', elements: hint.init.elements.length }
           //return 'byte[]'
       }
     }
