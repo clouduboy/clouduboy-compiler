@@ -1,13 +1,34 @@
-# Compiler limitations
+# The Clouduboy C compiler
+> At the end of the day, C/C++ is pretty similar to JavaScript - maybet that's _enough_.
+
+My thoughts were something along those lines when years ago I came up with the idea of the `clouduboy-compiler`. Back then, Clouduboy was simply a web-based code editor for the Clouduboy, and it used the exact same language one would use with the Arduino IDE: C++. Using JavaScript seemed to have obvious benefits - but I have seen "it's actually pretty similar!" lead people down the wrong path too many times (for example, at my friends at the Tessel Project's first incarnation). It took me some time to try, and even more to convince myself that this was something useful, worthwile - and more importantly, in the realm of possibility.
+
+
+## Perks
+- You write your game in JavaScript. I mean c'mon, it's wayyyy nicer than C++ will ever be.
+- You write your game. You save it. You click a button, and you can play it right in the browser - no flashing, no nothing, easy testing and debugging with the browser's devtools.
+- You don't need any fancy equipment, no even any of the microcontrollers. You could share your games to be played by others on laptops, tablets, phones,even!
+- Done coding? Click another button and your code is compiled in the cloud and travels to your machine to be readily flashed, if you use the Clouduboy Flasher it's even easier.
+- If you are not a coder, this might be a nice way for you to learn a thing or two about programming.
+- There are actually many more of these, but... you get the idea.
+
+
+## Caveats, a.k.a. compiler limitations
+All right, so this is already too good to be true. Where's the catch?
+
+Well, the catch is - Clouduboy cannot compile just _any_ JavaScript that uses Canvas... you will have to play by the rules. And there are quite a bit of those. The problem is, every single feature you want to use has to be re-implemented and than proper transforms should exist to convert code between those representations. It's not trivial to say the least. That said, it can be good enough, and features can be incrementally added.
+
+Oh did we mention this will compile and run whatever you write to be run on an 8-bit, 16MHz microcontroller? Oh yeah, so whatever is the output going to be, it needs to be mindful of resources and heavily optimized.
+
 Please note: this is not an exhaustive list of _all_ the limitations ever, but more like an FAQ to help you better navigate what's (currently) possible and what not.
 
-Please also note: **nothing** is inherently impossible to do, there are only two constraints:
+Please also note: **nothing** is inherently impossible to do, given enough developer brainpower, but there are two fundamental constraints:
 
 1. development time (this is the more restrictive) - I can only spend so much time working on Clouduboy (this is my little pet project, after all). I have an an unending pool of TODO, with which if you want to help feel free to (all of Clouduboy is open-source and the complete code is openly accessible on GitHub). That said, feel free to contribute in any way, but also don't _expect_ anything.
 2. device flash (device & program memory) - even the most complex feature feature can be re-implemented and polyfilled in C/C++. The problem is: how much code will it generate? Some of the devices that Clouduboy targets have a few kilobytes of memory with 30-ish kilobytes of flash (program) space. This is barely enough for anything and any features that Clouduboy adds will take away precious space from your _own_ code and ideas.
 
 
-## List key:
+### What do these labels mean?
 * `warn` - the Clouduboy compiler will transform the code for you to C/C++ but your code may not compile and/or may not run, or crash, or eat your laundry. Usually the warnings that Clouduboy will show you also contain some info on how to avoid the warning in the first place. That said, there is a pretty good chance that in the browser your code/game will work just fine even if it generates warnings.
 * `error` - crash & burn, baby! If you bump into one of these, the Clouduboy compiler will outright refuse to compile your code to C/C++ (and thus won't even attempt compiling it to a binaregendy HEX). Chances are that your code will run just fine in the browser, but unless you change it to comply with the stated limitations you won't be able to compile it and put it onto a precious pocketable plaything.
 
