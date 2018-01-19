@@ -1,0 +1,3 @@
+# Ingnore Flow module tempfiles
+.*
+!.gitignore
