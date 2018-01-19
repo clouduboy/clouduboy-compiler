@@ -20,6 +20,47 @@ function cmdFlowSuggest(file) { return `${FLOW_BIN} suggest ${file} --quiet | pa
 function cmdFlowAST(file) { return `${FLOW_BIN} ast ${file} --pretty` }
 
 
+// Module
+module.exports = {
+  suggest: (from) => {
+    let tmp
+
+    return createTempFile(from)
+      .then( temp => tmp = temp )
+      .then( _ => flowSuggest(tmp.file) )
+      .then( r => {
+        tmp.cleanup()
+        return r
+      })
+
+      // Catch any errors & clean up
+      .catch(e => {
+        tmp.cleanup()
+        return e
+      })
+  },
+
+  AST: (from) => {
+    let tmp
+
+    return createTempFile(from)
+      .then( temp => tmp = temp )
+      .then( _ => flowAST(tmp.file) )
+      .then( r => {
+        tmp.cleanup()
+        return r
+      })
+
+      // Catch any errors & clean up
+      .catch(e => {
+        tmp.cleanup()
+        console.log(e)
+        return e
+      })
+  }
+}
+
+
 // CLI
 if (!module.parent) {
   const cmd = process.argv[2] || 'help',
@@ -37,48 +78,19 @@ ast       Parse the MicroCanvas source into a JSON AST
 `)
 
   if (cmd === 'suggest') {
-    let tmp
-
-    createTempFile(srcFile)
-      .then( temp => tmp = temp )
-      .then( _ => flowSuggest(tmp.file) )
-      .then( r => {
-        console.log(r)
-        tmp.cleanup()
-      })
-
-      // Catch any errors & clean up
-      .catch(e => {
-        tmp.cleanup()
-        console.error(e)
-      })
+    module.exports.suggest(srcFile)
+      .then( r => console.log(r))
+      .then( e => console.error(e))
   }
 
   if (cmd === 'ast') {
-    let tmp
-
-    createTempFile(srcFile)
-      .then( temp => tmp = temp )
-      .then( _ => flowAST(tmp.file) )
-      .then( r => {
-        console.log(JSON.stringify(r, null, 2))
-        tmp.cleanup()
-      })
-
-      // Catch any errors & clean up
-        .catch(e => {
-        tmp.cleanup()
-        console.error(e)
-      })
+    module.exports.AST(srcFile)
+      .then( r => console.log(JSON.stringify(r, null, 2)))
+      .then( e => console.error(e))
   }
 
-// Module
-} else {
-  module.exports = {
-    flowSuggest,
-    flowAST,
-  }
 }
+
 
 
 // Suggests type annotations. If no outFile specified will use a temp file.
@@ -139,6 +151,12 @@ function createTempFile(from) {
   Object.defineProperty(tmp, 'toString', { value: () => file })
   Object.defineProperty(tmp, 'cleanup', { value: () => fs.unlink(file) })
 
+  // Source code passed in as a string
+  if (typeof from === 'object') {
+    fs.writeFileSync(tmp.file, from.src||from.source||'')
+  }
+
+
   // Optionally initialize
-  return from ? fs.copy(from, tmp.file).then(_ => tmp) : Promise.resolve(tmp)
+  return typeof from === 'string' ? fs.copy(from, tmp.file).then(_ => tmp) : Promise.resolve(tmp)
 }
