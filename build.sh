@@ -8,21 +8,17 @@ if [ -e $1 ]; then
   # Appends the Flow header (that contains the flow typedefs)
   # to the input JS file and runs it through Flow suggest to
   # explicitly include all inferred types.
-  #cat modules/flow/microcanvas.d.js $1 > game.flow.js
-  printf "/* @flow */" | cat - $1 > data/game.flow.js
-
+  # It creates game.flow.js from the inferred type suggestions.
+  node modules/flow/flow $1 > data/game.flow.js
 
   # Checks the file for Flow errors and saves them into
   # game.flow-check.log, also displays the errors
+  # TODO: implement in modules/flow & use that
   npx flow check data/game.flow.js > data/game.flow-check.log
   cat data/game.flow-check.log
 
-  # It patches the original file with these inferred type
-  # suggestions and saves it as game.flow.js
-  npx flow suggest data/game.flow.js | patch data/game.flow.js
-
   # Generate and store the AST too
-  npx flow ast data/game.flow.js --pretty > data/game.flow-ast.json
+  node modules/flow/flow $1 > data/game.flow-ast.json
 fi
 
 # Copies the game.ino compile output file to clouduboy-platforms
