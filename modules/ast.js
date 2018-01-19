@@ -101,8 +101,58 @@ AST.findAncestor = function(node, filterFunction) {
 
 
 //
+AST.nodeAt = function(path, root) {
+  return path.reduce((now, prop) => {
+    if (now && prop in now) return now[prop]
+  }, root)
+}
+
+//
+AST.getPath = function(node) {
+  let path = []
+  //console.log(node, node.$parent, (node.$parent||{}).$parent)
+
+  // Repeat until we reach the toplevel body property
+  let p, cNode = node
+  while (p = cNode.$parent) {
+
+    // Try to find a match with the requested element
+    findproperty:for (let k of Object.keys(p)) {
+      // Handle collections
+      if (p[k] && typeof p[k] === 'object' && p[k].length) {
+        for (let idx = 0; idx < p[k].length; ++idx) {
+          if (p[k][idx] === cNode) {
+            path.push(idx, k)
+            break findproperty
+          }
+        }
+      }
+
+      // Handle properties
+      if (p[k] === cNode) {
+        path.push(k)
+        break
+      }
+    }
+
+    // Check parent's parent
+    cNode = p
+  }
+
+  // Make sure we reached the top
+  path.reverse()
+  if (path[0] !== 'body') {
+    console.log(`Failed to reach the top of the AST from ${AST.log(node)}`)
+  }
+
+  return path
+}
+
+
+//
 AST.log = function(node) {
   //
+  if (!node) return '<?>'
   const pos = AST.lineNumber(node)
 
   let ret = (node.$raw || AST.getString(node))
@@ -148,7 +198,7 @@ function from(source) {
   // Preprocess AST - add node parents
   ast.body.forEach(n => {
     // Top level nodes
-    if (n instanceof Node) addParent(ast, n, null)
+    if (n instanceof Node) addParent(ast, n, ast)
   })
 
   return ast
@@ -186,7 +236,8 @@ function addParent(ast, n, parent) {
    'callee', 'argument', 'arguments', 'expression',
    'test', 'consequent', 'alternate',
    'declarations',
-   'init', 'test', 'update',
+   'init', 'params',
+   'update',
   ].forEach(prop => {
     if (prop in n) addParent(ast, n[prop], n)
   })
