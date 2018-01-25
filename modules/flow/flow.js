@@ -1,12 +1,13 @@
 "use strict"
 
 const fs = require('fs-extra')
+const path = require('path')
 
 const execa = require('execa')
 const uuid = require('uuid/v1')
 
 const FLOW_HEADER = "/* @flow */"
-const FLOW_BIN = './node_modules/.bin/flow'
+const FLOW_BIN = path.join(__dirname, '../../node_modules/.bin/flow')
 
 
 // flow check
