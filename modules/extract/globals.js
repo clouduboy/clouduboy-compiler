@@ -112,6 +112,9 @@ function parse(game) {
         .reduce((a,b) => { return a.concat(b); }, [])
     )
 
+  // Ignore redeclaration of built-ins
+  funcDecls = funcDecls.filter(f => f.id.name !== 'easeCubicIn' )
+
   funcDecls.forEach(function (dec) {
     const id = getString(dec.id),
           params = []

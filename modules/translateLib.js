@@ -45,7 +45,7 @@ function transformResult(r) {
   // Object returned describing a function/library call
   if (typeof r == 'object' && 'call' in r) {
     // '<target>' string in call properties are replaced with the actual game target
-    return r.call.replace('<target>',translate.game.target) + translate.args(r.args)
+    return (r.call||'').replace('<target>',translate.game.target) + translate.args(r.args)
   }
 
   // Array/member accessor
