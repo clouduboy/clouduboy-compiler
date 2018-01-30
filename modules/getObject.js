@@ -3,7 +3,9 @@
 const getString = require('./getString.js');
 
 
-
+// Parses the object literal and returns the JS object representing the
+// original source literal
+// TODO: replace this with JSON.parse($raw.start..$raw.end)?
 function getObject(exp) {
   if (typeof exp === 'string') return exp;
 

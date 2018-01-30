@@ -181,6 +181,9 @@ AST.lineNumber = function(node) {
 // Original (source) string representation of the AST node
 AST.getString = require('./getString')
 
+// Original (source literal) object representation of the AST node
+AST.getObject = require('./getObject')
+
 
 module.exports = { from, AST }
 
