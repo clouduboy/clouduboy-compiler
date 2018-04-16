@@ -30,7 +30,8 @@ const profile = {
     },
     graphics: {
       ctype: 'const unsigned char'
-    }
+    },
+    progmem: 'PROGMEM'
   },
 
   // Code generator (export code for platform target)

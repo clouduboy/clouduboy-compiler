@@ -5,5 +5,5 @@ void setup() {
   if (!arduboy.cpuLoad()) arduboy.begin();
 
 ////// CUSTOM SETUP //////
-$__contents__;
+${params.contents};
 }

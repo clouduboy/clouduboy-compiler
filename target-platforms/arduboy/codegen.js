@@ -1,27 +1,38 @@
 'use strict'
 
 const path = require('path')
-const fs = require('fs')
+
+const preprocess = require('../lib/preprocess')
+const load = require('../lib/load')
 
 
-module.exports = function(game) {
+
+module.exports = function(game, primaryDir) {
+  let ctx = Object.assign(Object.create(null), game, {
+    generateHeader, generateAssets, generateSetup, generateLoop, generateBuiltIn,
+    src: primaryDir||__dirname,
+    basedir: path.join(__dirname, '..'),
+    load, preprocess
+  })
+
   let b = '';
 
   // Header
-  b += header().trim()+'\n\n';
+  b += ctx.generateHeader()+'\n\n';
 
   // Macro Helpers
-  b += builtins('arrays').trim()+'\n\n';
+  b += ctx.generateBuiltIn('arrays')+'\n\n';
 
 
   // Assets
   // Graphics
   if (game.gfx) {
-  game.gfx.forEach(asset => {
-      b += gfx(asset.cid, asset.value
-        // TODO: only if bit density is high enough (1/2 bytes per pixel)
-        //,asset.meta.w+'*'+asset.meta.h+'*'+asset.meta.frames
-      );
+    game.gfx.forEach(asset => {
+      b += ctx.generateAssets('gfx', {
+        id: asset.cid,
+        data: asset.value,
+        //dimensions: DEPRECATED
+      }) + '\n';
     });
     b+='\n';
   }
@@ -29,7 +40,10 @@ module.exports = function(game) {
   // Sounds
   if (game.sfx) {
     game.sfx.forEach(asset => {
-      b += sfx(asset.cid, asset.value);
+      b += ctx.generateAssets('sfx', {
+        id: asset.cid,
+        data: asset.value
+      });
     });
     b+='\n';
   }
@@ -79,13 +93,13 @@ module.exports = function(game) {
 
   // Optional built-ins
   if (game.animations) {
-    b += builtins('animations').trim()+'\n\n';
+    b += ctx.generateBuiltIn('animations')+'\n\n';
   }
   if (game.generators) {
-    b += builtins('generators').trim()+'\n\n';
+    b += ctx.generateBuiltIn('generators')+'\n\n';
   }
   if (game.collisions) {
-    b += builtins('collisions').trim()+'\n\n';
+    b += ctx.generateBuiltIn('collisions')+'\n\n';
   }
 
   // Functions
@@ -122,70 +136,52 @@ module.exports = function(game) {
   }
 
   // Setup
-  b+=setup(game.setup.code.join('\n'))+'\n';
+  b+=ctx.generateSetup({
+    contents: game.setup.code.join('\n')
+  })+'\n';
 
   // Loop
-  b+=loop(game.loop.code.join('\n'))+'\n';
+  b+=ctx.generateLoop({
+    contents: game.loop.code.join('\n')
+  })+'\n';
 
   return b;
 }
 
-function header() {
-  return (
-    fs.readFileSync(path.join(__dirname, 'base.ino'))
-      .toString()
-    )
+
+
+function generateHeader() {
+  return this.load('base.ino')
 }
 
-function gfx(id, data, dimensions) {
-  return (
-    fs.readFileSync(path.join(__dirname, 'assets/gfx.ino'))
-      .toString()
-      .replace('$__id__', id)
-      .replace('$__data__', data)
-      .replace('$__dimensions__', dimensions||'')
-    )
+function generateAssets(assetType, params) {
+
+  return this.load(`assets/${assetType}.ino`, params)
 }
 
-function sfx(id, data) {
-  return (
-    fs.readFileSync(path.join(__dirname, 'assets/sfx.ino'))
-      .toString()
-      .replace('$__id__', id)
-      .replace('$__data__', data)
-    )
+function generateSetup(params) {
+  return this.load(`setup.ino`, params)
 }
 
-function setup(contents) {
-  return (
-    fs.readFileSync(path.join(__dirname, 'setup.ino'))
-      .toString()
-      .replace('$__contents__;', contents)
-    )
+function generateLoop(params) {
+  return this.load(`loop.ino`, params)
 }
 
-function loop(contents) {
-  return (
-    fs.readFileSync(path.join(__dirname, 'loop.ino'))
-      .toString()
-      .replace('$__contents__;', contents)
-    )
-}
-
-function builtins(id) {
+function generateBuiltIn(id) {
   switch (id) {
     // TODO: implement in C for the Arduboy/PROGMEM
     case 'collisions':
-      return fs.readFileSync(path.join(__dirname, 'built-ins/collides.ino')).toString();
+      return this.load('built-ins/collides.ino')
 
+    // NOTE: legacy/broken/deprecated
     case 'generators':
-      return fs.readFileSync(path.join(__dirname, 'built-ins/microcanvas_yield.ino')).toString();
+      return this.load('built-ins/microcanvas_yield.ino')
 
     case 'animations':
       // TODO: conditional loading of used easings and features
-      return fs.readFileSync(path.join(__dirname, 'built-ins/ease_cubic_in.ino')).toString();
+      return this.load('built-ins/ease_cubic_in.ino')
 
     case 'arrays':
-      return fs.readFileSync(path.join(__dirname, 'built-ins/LENGTHOF.ino')).toString();
+      return this.load('built-ins/LENGTHOF.ino')
   }
 }

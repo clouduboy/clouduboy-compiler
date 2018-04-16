@@ -5,7 +5,7 @@ void loop() {
   if (_microcanvas_frame_counter==60000) _microcanvas_frame_counter = 0;
 
 ////// LOOP CONTENTS TO FOLLOW //////
-$__contents__;
+${params.contents};
 ////// END OF LOOP CONTENTS //////
 
   arduboy.display();
