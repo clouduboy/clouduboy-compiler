@@ -8,50 +8,109 @@ const utils = require('../utils')
 module.exports = { parse }
 
 
+// MicroCanvas standard library hook
+function initHook(game, dec) {
+  if (dec.init && dec.init.type === 'NewExpression' && dec.init.callee.name === 'MicroCanvas') {
+    game.alias = dec.id.name
+
+    game.log(`MicroCanvas uses the alias: "${game.alias}"`)
+
+    // Filter this out
+    return false
+  }
+
+  // Not an init hook, keep this declaration for further processing
+  return true
+}
+
+
+
+// Graphics assets
+function filterGfxAssets(game, dec) {
+  // Not a graphics asset, leave it in
+  if (!dec.id.name.match(/^gfx/)) return true
+
+  // Create new graphics object
+  game.gfx.push({
+    id: dec.id.name,
+    cid: utils.toSnakeCase(dec.id.name)
+  })
+
+  // Make graphics object accessible via its id
+  game.gfx[dec.id.name] = game.gfx[game.gfx.length-1]
+
+  // Process initializer (if any)
+  // NOTE: this translate() call does not generate source output,
+  // but will have other side effects (e.g. constants) depending
+  // on the currently selected target.
+  if (dec.init) {
+    // If initializer is a callexpression, we pass the variable name
+    // as a second parameter, so the transform knows the context of
+    // the load call
+    // TODO: documentation
+    // TODO: if provided, make sure it overrides this value
+    if (dec.init.type == 'CallExpression') {
+      dec.init.arguments.push(dec.id.name)
+    }
+
+    // Call the translate() function to transform the
+    // standard library asset load
+    let gfxInit = translate(dec.init)
+    console.log(gfxInit)
+  }
+
+  // Already processed, filter these out
+  return false
+}
+
+// Sound asset
+function filterSfxAssets(game, dec) {
+  if (!dec.id.name.match(/^sfx/)) return true
+
+  game.sfx.push({
+    id: dec.id.name,
+    cid: utils.toSnakeCase(dec.id.name)
+  })
+  game.sfx[dec.id.name] = game.sfx[game.sfx.length-1]
+
+  // Already processed, filter these out
+  return false
+}
+
+
 function parse(game) {
   console.log('Processing globals')
 
   // TODO: check for reserved globals, like game.target
 
   // All variable declarations
-  let vars = game.ast.body.forEach(function (n) {
-    if (n.kind === 'const') {
-      n.declarations
-      // Skip function valued
-      .filter(decl => !decl.init || (decl.init.type !== 'FunctionExpression' && decl.init.type !== 'ArrowFunctionExpression'))
-      .forEach(dec => {
-        // TODO: make sure the resulting expression is a constant expression?
-        game.createConstant(getString(dec.id), translate(dec.init))
-      })
+  game.ast.body.forEach(n => {
+    let decls = n.declarations
 
-    } else if (n.kind === 'let') {
-      n.declarations
-      // Skip function valued
-      .filter(decl => !decl.init || (decl.init.type !== 'FunctionExpression' && decl.init.type !== 'ArrowFunctionExpression'))
-      .forEach(dec => {
-        // Graphics asset
-        if (dec.id.name.match(/^gfx/)) {
-          game.gfx.push({
-            id: dec.id.name,
-            cid: utils.toSnakeCase(dec.id.name)
-          })
-          game.gfx[dec.id.name] = game.gfx[game.gfx.length-1]
+    if (decls) {
+      decls = decls
+        // Skip function valued
+        // TODO: do not skip but process these instead of doing a loop again later on
+        .filter(decl => !decl.init || (decl.init.type !== 'FunctionExpression' && decl.init.type !== 'ArrowFunctionExpression'))
 
-        // Sound asset
-        } else if (dec.id.name.match(/^sfx/)) {
-          game.sfx.push({
-            id: dec.id.name,
-            cid: utils.toSnakeCase(dec.id.name)
-          })
-          game.sfx[dec.id.name] = game.sfx[game.sfx.length-1]
+        // Process assets
+        .filter(filterGfxAssets.bind(null, game))
+        .filter(filterSfxAssets.bind(null, game))
 
-        // MicroCanvas standard library hook
-        } else if (dec.init && dec.init.type === 'NewExpression' && dec.init.callee.name === 'MicroCanvas') {
-          game.alias = dec.id.name
+        // MicroCanvas init
+        .filter(initHook.bind(null, game))
+    }
 
-          game.log(`MicroCanvas uses the alias: "${game.alias}"`)
+    switch (n.kind) {
+      case 'const':
+        decls.forEach(dec => {
+          // TODO: make sure the resulting expression is a constant expression?
+          game.createConstant(getString(dec.id), translate(dec.init))
+        })
+      break
 
-        } else {
+      case 'let':
+        decls.forEach(dec => {
           let v = game.createVariable(dec.id.name, undefined, undefined, dec)
 
           // Do size translation on the initializer if necessary
@@ -76,20 +135,18 @@ function parse(game) {
           // Make global accessible via its name
           // TODO: maybe use a WeakMap instead?
           Object.defineProperty(game.globals, dec.id.name, { value: game.globals[game.globals.length-1] })
-        }
-      })
+        })
+      break
 
-    // 'var' declarations are okay in globals since we hoist them *anyway*
-    } else if (n.kind === 'var') {
-      // Skip function valued declarations
-      n.declarations
-      .filter(decl => !decl.init || (decl.init.type !== 'FunctionExpression' && decl.init.type !== 'ArrowFunctionExpression'))
-      .forEach(dec => {
-        let v = game.createVariable(dec.id.name, undefined, undefined, dec)
+      // 'var' declarations are okay in globals since we hoist them *anyway*
+      case 'var':
+        decls.forEach(dec => {
+          let v = game.createVariable(dec.id.name, undefined, undefined, dec)
 
-        game.globals.push(v)
-        Object.defineProperty(game.globals, dec.id.name, { value: game.globals[game.globals.length-1] })
-      })
+          game.globals.push(v)
+          Object.defineProperty(game.globals, dec.id.name, { value: game.globals[game.globals.length-1] })
+        })
+      break
     }
   })
 
@@ -113,6 +170,8 @@ function parse(game) {
     )
 
   // Ignore redeclaration of built-ins
+  // TODO: make sure we have an up-to-date (and target-aware)
+  // list of built-ins here!
   funcDecls = funcDecls.filter(f => f.id.name !== 'easeCubicIn' )
 
   funcDecls.forEach(function (dec) {

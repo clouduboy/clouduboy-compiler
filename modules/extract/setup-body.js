@@ -20,6 +20,7 @@ function parse(game) {
 
   // Walk the setup-body contents
   // TODO: these should probably live in translate/translateLib
+  // DEPRECATED!
   sbody.forEach(exp => {
     // Load graphics or sound assets
     if (exp.expression
@@ -54,7 +55,13 @@ function loadAsset(game, exp) {
     if (isCalling(exp.right, game.alias+'.loadGraphics')
      || isCalling(exp.right, game.alias+'.loadSprite')
     ) {
-      loadGfx(game, id, exp.right.arguments)
+      if (exp.right.type == 'CallExpression') {
+        exp.right.arguments.push(id)
+      }
+
+      let gfxInit = translate(exp.right)
+      //console.log(gfxInit)
+      //loadGfx(game, id, exp.right.arguments)
       console.log(' 👾 loaded %s as GFX', id)
     } else {
       console.log('Unknown GFX load format: '+JSON.stringify(exp.right.callee))
