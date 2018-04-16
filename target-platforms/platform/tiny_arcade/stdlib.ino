@@ -1,0 +1,143 @@
+////////////// TINY ARCADE LIB, BASED ON ARDUBOY //////////////////
+uint8_t frameRate;
+uint16_t frameCount;
+uint8_t eachFrameMillis;
+long lastFrameStart;
+long nextFrameStart;
+bool post_render;
+uint8_t lastFrameDurationMs;
+
+/* Graphics */
+void tiny_arcade_clear() {
+  tiny_arcade_fillScreen(0x0000);
+}
+
+void tiny_arcade_fillScreen(uint16_t color) {
+  for (int i = 0; i < WIDTH*HEIGHT*BIT_DEPTH; i++) {
+    buffer[i++] = color & 0xff;
+    buffer[i] = color >> 8;
+  }
+}
+
+void tiny_arcade_display() {
+  // debug
+  tiny_arcade_debug_int(frameCount);
+
+  // write double-buffer contents
+  _display.goTo(0, 0);
+  _display.startData();
+  _display.writeBuffer(buffer, WIDTH * HEIGHT * 2);
+  _display.endTransfer();
+}
+
+//void tiny_arcade_drawBitmap(int16_t x, int16_t y, const uint8_t *gfx, uint8_t w, uint8_t h, uint8_t blending) {
+void tiny_arcade_drawBitmap(int16_t dx, int16_t dy, const uint16_t *gfx, uint8_t w, uint8_t h, uint8_t blending) {
+  for (int y = dy; y < min(HEIGHT, dy+h); y++) {
+    for (int x = dx; x < min(WIDTH, dx+w); x++) {
+      uint16_t color = *gfx++;
+
+      // Color mode 0 (default)
+      // Paint only opaque pixels, skip transparent pixels
+      // TODO: transparency handling
+      if (blending == WHITE) {
+        buffer[(x + y*WIDTH) * BIT_DEPTH] = color >> 8;
+        if (BIT_DEPTH == 2) buffer[(x + y*WIDTH) * BIT_DEPTH + 1] = color;
+      }
+    }
+  }
+}
+
+
+/* Frame management */
+void tiny_arcade_setFrameRate(uint8_t rate)
+{
+  frameRate = rate;
+  eachFrameMillis = 1000/rate;
+}
+
+bool tiny_arcade_everyXFrames(uint8_t frames)
+{
+  return frameCount % frames == 0;
+}
+
+void tiny_arcade_init() {
+    // frame management
+    tiny_arcade_setFrameRate(60);
+    frameCount = 0;
+    nextFrameStart = 0;
+}
+
+bool tiny_arcade_nextFrame()
+{
+  long now = millis();
+  uint8_t remaining;
+
+  // post render
+  if (post_render) {
+    lastFrameDurationMs = now - lastFrameStart;
+    frameCount++;
+    post_render = false;
+  }
+
+  // if it's not time for the next frame yet
+  if (now < nextFrameStart) {
+    remaining = nextFrameStart - now;
+    // if we have more than 1ms to spare, lets sleep
+    // we should be woken up by timer0 every 1ms, so this should be ok
+    if (remaining > 1)
+      ///*TODO:where is this from?*/idle();
+    ///idle is from Arduboy core.cpp
+    ///https://forum.arduino.cc/index.php?topic=337289.msg2325280#msg2325280
+    ///
+    {
+      delay(1);
+    }
+    return false;
+  }
+
+  // pre-render
+
+  // technically next frame should be last frame + each frame but if we're
+  // running a slow render we would constnatly be behind the clock
+  // keep an eye on this and see how it works.  If it works well the
+  // lastFrameStart variable could be eliminated completely
+  nextFrameStart = now + eachFrameMillis;
+  lastFrameStart = now;
+  post_render = true;
+  return post_render;
+}
+
+bool tiny_arcade_pressed(int btn) {
+  switch (btn) {
+    case A_BUTTON:
+      return checkButton(TAButton1);
+    case LEFT_BUTTON:
+      return checkJoystick(TAJoystickLeft);
+    case RIGHT_BUTTON:
+      return checkJoystick(TAJoystickRight);
+  }
+  return false;
+}
+
+
+
+/// DUMMY / UNIMPLEMENTED
+void tiny_arcade_fillRect(int x, int y, int w, int h, int color) {}
+
+void tiny_arcade_setTextSize(int size) {}
+void tiny_arcade_setCursor( int x, int y ) {}
+void tiny_arcade_print( const char* string) {}
+
+
+// DEBUG
+const uint16_t gfx_numbers[] = {
+  /*5x5x12@16b*/ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0xffff, 0x0000, 0xffff, 0x0000, 0x0000, 0xffff, 0x0000, 0xffff, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0xffff, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0xffff, 0x0000, 0xffff, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0xffff, 0x0000, 0xffff, 0x0000, 0x0000, 0xffff, 0xffff, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xffff, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+};
+void tiny_arcade_debug_int(int var) {
+  int pos = 1;
+  while (pos < 16 && var > 0) {
+    tiny_arcade_drawBitmap(WIDTH-pos*5,0, gfx_numbers+25*(var%10), 5,5,WHITE);
+    var /= 10;
+    ++pos;
+  }
+}
