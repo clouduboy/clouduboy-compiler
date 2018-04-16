@@ -9,28 +9,25 @@ currently being held down.
 
 const { AST } = require('../../ast')
 
-// Required for the button mappings
-// TODO: these button mappings should probably be defined in and
-// loaded into translate.game.targetButtonMapping or something
-const utils = require(`../../utils`);
 
 
 // Clear the screen
 // Equivalent of game.clearRect(0, 0, game.width, game.height)
 module.exports = (context) => {
-  const {translate, callexp} = context;
+  const {translate, callexp} = context
+  const BUTTONS = translate.game.targetPlatform.mappings.buttons
 
   // Figure out which button is being queried
-  const btn = AST.getString(callexp.arguments[0]);
+  const btn = AST.getString(callexp.arguments[0])
 
   // Make sure button actually exists
-  if (btn in utils.BUTTONS[translate.game.target] === false) {
+  if (btn in BUTTONS === false) {
     return translate.game.error(`[!] Unknown button "${btn}" in: ${AST.log(callexp)}`)
   }
 
   // simple 1:1 mapping
   return ({
     call: '<target>.pressed',
-    args: [ utils.BUTTONS[translate.game.target][btn] ]
+    args: [ BUTTONS[btn] ]
   })
 }

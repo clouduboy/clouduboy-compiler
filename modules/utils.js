@@ -1,18 +1,5 @@
 'use strict';
 
-// Button mapping for different targets
-const BUTTONS = {
-  'arduboy': {
-    left: 'LEFT_BUTTON',
-    right: 'RIGHT_BUTTON',
-    up: 'UP_BUTTON',
-    down: 'DOWN_BUTTON',
-    space: 'A_BUTTON',
-    enter: 'B_BUTTON',
-  }
-};
-
-
 // Enumerate parent nodes (returns an array of elements leaf => root)
 function walkParents(node) {
   let ret = [];
@@ -39,7 +26,6 @@ function toConstCase(s) {
 
 
 module.exports = {
-  BUTTONS: BUTTONS,
   walkParents: walkParents,
   toSnakeCase: toSnakeCase,
   toConstCase: toConstCase
