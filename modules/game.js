@@ -12,6 +12,7 @@ function Game(target, id) {
   Object.assign(this, {
     alias: 'game',
     target: target,
+    targetPlatform: platforms[target],
     compileLog: [],
     id: id,
     constants: [], globals: [], gfx: [], sfx: [],
