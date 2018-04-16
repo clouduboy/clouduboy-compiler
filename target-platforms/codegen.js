@@ -2,16 +2,16 @@
 
 const path = require('path')
 
-const preprocess = require('../lib/preprocess')
-const load = require('../lib/load')
+const preprocess = require('./lib/preprocess')
+const load = require('./lib/load')
 
 
 
-module.exports = function(game, primaryDir) {
+module.exports = function(game) {
   let ctx = Object.assign(Object.create(null), game, {
     generateHeader, generateAssets, generateSetup, generateLoop, generateBuiltIn,
-    src: primaryDir||__dirname,
-    basedir: path.join(__dirname, '..'),
+    src: path.join(__dirname, 'platform', game.target),
+    basedir: path.join(__dirname, 'platform/default'),
     load, preprocess
   })
 
@@ -144,6 +144,11 @@ module.exports = function(game, primaryDir) {
   b+=ctx.generateLoop({
     contents: game.loop.code.join('\n')
   })+'\n';
+
+
+  // Append stdlib
+  b+=ctx.load(`stdlib.ino`)+'\n';
+
 
   return b;
 }

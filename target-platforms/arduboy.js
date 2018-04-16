@@ -35,7 +35,7 @@ const profile = {
   },
 
   // Code generator (export code for platform target)
-  export: require('./arduboy/codegen'),
+  export: require('./codegen'),
 }
 
 
