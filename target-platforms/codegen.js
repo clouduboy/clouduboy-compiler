@@ -135,6 +135,10 @@ module.exports = function(game) {
     b+='\n';
   }
 
+  // Append stdlib
+  b+=ctx.load(`stdlib.ino`)+'\n';
+
+
   // Setup
   b+=ctx.generateSetup({
     contents: game.setup.code.join('\n')
@@ -144,10 +148,6 @@ module.exports = function(game) {
   b+=ctx.generateLoop({
     contents: game.loop.code.join('\n')
   })+'\n';
-
-
-  // Append stdlib
-  b+=ctx.load(`stdlib.ino`)+'\n';
 
 
   return b;

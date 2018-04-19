@@ -10,6 +10,7 @@ void setup() {
   _display.setFlip(0);
   _display.setBrightness(8);
   _display.setBitDepth(1);
+  //_display.setColorMode(TSColorModeBGR);
 
 ////// CUSTOM SETUP //////
 ${params.contents};
